@@ -1,0 +1,50 @@
+# =============================================================================
+# ZhikunCode — Docker Build Context Exclusions
+# =============================================================================
+
+# Version control
+.git
+.gitignore
+
+# IDE & editor
+.vscode
+.idea
+*.iml
+
+# Documentation (not needed in image)
+docs/
+
+# Logs
+log/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# ---- Backend exclusions ----
+backend/target/
+backend/.ai-code-assistant/
+backend/.claude/
+backend/.scratchpad/
+backend/.agentskills/
+
+# ---- Frontend exclusions ----
+frontend/node_modules/
+frontend/dist/
+frontend/test-results/
+frontend/e2e/
+
+# ---- Python exclusions ----
+python-service/.venv/
+python-service/venv/
+python-service/.pytest_cache/
+python-service/__pycache__/
+python-service/tests/
+
+# ---- Docker & CI ----
+docker-compose*.yml
+.env
+*.log
+
+# Qoder workspace
+.qoder/

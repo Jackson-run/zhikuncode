@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - AI Code Assistant</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --error: #ef4444;
+            --success: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .logo p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        input[type="password"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.authenticated {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .status-badge.unauthenticated {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+        }
+
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dashboard-header h2 {
+            font-size: 20px;
+        }
+
+        .btn-logout {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: var(--error);
+            border-color: var(--error);
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .info-item {
+            background: var(--bg);
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .info-item label {
+            margin-bottom: 4px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-item .value {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 24px;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 登录表单 -->
+        <div class="card" id="loginForm">
+            <div class="logo">
+                <h1>🔐 Admin Panel</h1>
+                <p>AI Code Assistant - 管理控制台</p>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="password">Admin Password</label>
+                    <input type="password" id="password" placeholder="Enter admin password" autocomplete="current-password" required>
+                </div>
+                <button type="submit" class="btn" id="loginBtn">Login</button>
+            </form>
+
+            <div class="footer">
+                Secured by AI Code Assistant
+            </div>
+        </div>
+
+        <!-- 管理面板 (登录后显示) -->
+        <div class="card dashboard" id="dashboard">
+            <div class="dashboard-header">
+                <h2>Dashboard</h2>
+                <button class="btn-logout" onclick="handleLogout()">Logout</button>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Authentication Status</label>
+                    <div class="value"><span class="status-badge authenticated">Authenticated</span></div>
+                </div>
+                <div class="info-item">
+                    <label>Session</label>
+                    <div class="value" id="sessionInfo">Loading...</div>
+                </div>
+            </div>
+
+            <div class="footer">
+                AI Code Assistant Admin Panel v1.0
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const dashboard = document.getElementById('dashboard');
+        const errorMessage = document.getElementById('errorMessage');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+        const sessionInfo = document.getElementById('sessionInfo');
+
+        // 页面加载时检查认证状态
+        async function checkAuthStatus() {
+            try {
+                const response = await fetch('/api/admin/status', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+
+                if (data.authenticated) {
+                    showDashboard(data);
+                } else {
+                    showLoginForm();
+                }
+            } catch (error) {
+                console.error('Failed to check auth status:', error);
+                showLoginForm();
+            }
+        }
+
+        function showLoginForm() {
+            loginForm.style.display = 'block';
+            dashboard.style.display = 'none';
+        }
+
+        function showDashboard(data) {
+            loginForm.style.display = 'none';
+            dashboard.style.display = 'block';
+            sessionInfo.textContent = data.timestamp ? new Date(data.timestamp).toLocaleString() : 'Active';
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const password = passwordInput.value;
+            if (!password) {
+                showError('Please enter your password');
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ password: password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showDashboard(data);
+                } else {
+                    showError(data.message || 'Login failed');
+                }
+            } catch (error) {
+                showError('Network error, please try again');
+                console.error('Login error:', error);
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+                passwordInput.value = '';
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                await fetch('/api/admin/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                showLoginForm();
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        }
+
+        // 初始化
+        checkAuthStatus();
+    </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+# =============================================================================
+# ZhikunCode — Docker Compose (Production)
+# =============================================================================
+# Usage:
+#   docker compose up -d          # Start in background
+#   docker compose logs -f        # Follow logs
+#   docker compose down           # Stop and remove
+#   docker compose up --build     # Rebuild and start
+# =============================================================================
+
+services:
+  zhikuncode:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    image: zhikuncode:latest
+    container_name: zhikuncode
+    ports:
+      - "${ZHIKUN_PORT:-8080}:8080"
+    environment:
+      # ---- Application ----
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-production}
+      - "JAVA_OPTS=${JAVA_OPTS:--Xms256m -Xmx1024m --enable-preview}"
+      # ---- LLM API Key (required) ----
+      - LLM_API_KEY=${LLM_API_KEY:?Please set LLM_API_KEY in .env file}
+      # ---- LLM Provider (optional, defaults to Alibaba DashScope) ----
+      - LLM_BASE_URL=${LLM_BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
+      - LLM_DEFAULT_MODEL=${LLM_DEFAULT_MODEL:-qwen3.6-plus}
+      - LLM_MODELS=${LLM_MODELS:-qwen3.6-plus,qwen-max,qwen-plus,qwen-turbo,qwen-coder-plus}
+      # ---- Python subprocess config ----
+      - PYTHON_SERVICE_HOST=127.0.0.1
+      - PYTHON_SERVICE_PORT=8000
+      # ---- Static resources (frontend served from external dir) ----
+      - SPRING_WEB_RESOURCES_STATIC_LOCATIONS=classpath:/static/,file:/app/static/
+    volumes:
+      # Persistent data (SQLite DB, session data, memories)
+      - zhikun-data:/app/data
+      # User workspace mount (the code project to work on)
+      - ${WORKSPACE_PATH:-./workspace}:/app/workspace
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    # Resource limits (adjust based on your server)
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+        reservations:
+          memory: 512m
+
+volumes:
+  zhikun-data:
+    driver: local

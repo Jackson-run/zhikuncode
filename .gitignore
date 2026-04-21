@@ -1,0 +1,68 @@
+# === Java / Maven ===
+backend/target/
+*.class
+*.jar
+*.war
+*.log
+.mvn/wrapper/maven-wrapper.jar
+
+# === Node / Frontend ===
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
+
+# === Python ===
+python-service/__pycache__/
+python-service/.venv/
+python-service/venv/
+python-service/htmlcov/
+python-service/.coverage
+*.pyc
+*.pyo
+
+# === IDE ===
+.idea/
+*.iml
+.vscode/
+.qoder/
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# macOS Finder duplicate files (e.g. "file 2.java")
+**/src/**/* [0-9]*.*
+**/src/**/* copy*.*
+
+# === Misc ===
+*.swp
+*.swo
+*~
+
+# === 敏感文件 ===
+.env
+.env.*
+!.env.example
+configuration/mcp/mcp_capability_registry.json
+*.db
+*.db-wal
+*.db-shm
+backend/.ai-code-assistant/
+backend/.agentskills/
+backend/.scratchpad/
+log/
+access-token
+*.pem
+*.key
+
+# ZhikuCode 本地记忆文件
+zhikun.local.md
+
+# ZhikuCode 本地配置目录
+.zhikun/
+
+# 内部文档（不适合开源）
+docs/
