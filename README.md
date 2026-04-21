@@ -1,128 +1,610 @@
-# ZhikunCode
+[🌐 English](docs/README_EN.md)
 
-**An AI-powered intelligent coding assistant** with multi-model support, multi-agent collaboration, and IDE-level tooling — built for developers who want AI to truly understand their codebase.
+<div align="center">
+  <img src="docs/assets/logo.png" alt="ZhikunCode" width="120" />
+  <h1>ZhikunCode</h1>
+  <p><strong>开源 AI 编程助手 — 部署一次，浏览器全流程操控</strong></p>
+  <p>多 Agent 协作 · Docker 自托管 · 国产大模型直连 · 深度安全架构</p>
 
-## ✨ Features
+  <p>
+    <a href="#-快速开始">快速开始</a> ·
+    <a href="#-特性亮点">核心特性</a> ·
+    <a href="#-demo">在线演示</a> ·
+    <a href="#-竞品对比">竞品对比</a> ·
+    <a href="docs/README_EN.md">English</a>
+  </p>
 
-- 🤖 **Multi-Model Support** — Qwen, DeepSeek, OpenAI, Anthropic Claude, and any OpenAI-compatible API
-- 🧠 **Multi-Agent Collaboration** — Team and Swarm modes for complex task orchestration
-- 🛡️ **Secure Bash Execution** — 8-layer safety checks with sandboxed command execution
-- 🔌 **MCP Integration** — Model Context Protocol for extensible tool capabilities
-- 🛠️ **IDE-Level Tooling** — File editing, code search, symbol analysis, and project navigation
-- 🔄 **Real-Time Communication** — WebSocket-based streaming for instant feedback
-- 🔐 **Permission Control** — Fine-grained security sandbox with access policies
-- 📝 **Persistent Memory** — Cross-session context retention for smarter assistance
+  <p>
+    <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
+    <a href="https://github.com/zhikunqingtao/zhikuncode"><img src="https://img.shields.io/badge/Docker-Ready-blue?logo=docker" alt="Docker" /></a>
+    <a href="https://github.com/zhikunqingtao/zhikuncode/stargazers"><img src="https://img.shields.io/github/stars/zhikunqingtao/zhikuncode?style=social" alt="GitHub Stars" /></a>
+    <a href="https://github.com/zhikunqingtao/zhikuncode"><img src="https://img.shields.io/github/last-commit/zhikunqingtao/zhikuncode" alt="Last Commit" /></a>
+    <a href="https://github.com/zhikunqingtao/zhikuncode"><img src="https://img.shields.io/github/languages/code-size/zhikunqingtao/zhikuncode" alt="Code Size" /></a>
+  </p>
+</div>
 
-## 🏗️ Tech Stack
+---
 
-| Layer | Technologies |
-|-------|-------------|
-| **Backend** | Java 21, Spring Boot 3.x, WebSocket, SQLite |
-| **Frontend** | React 18, TypeScript, Vite, TailwindCSS |
-| **Python Service** | FastAPI, Uvicorn, Code Analysis Tools |
-| **Build Tools** | Maven, npm, pip |
-| **Deployment** | Docker, Docker Compose |
+> **三周业余时间，~77K 行代码。**
+> 一个人也能用 AI 写出完整的 AI 编程助手 —— 部署到服务器，打开浏览器就能用，手机上也行。
 
-## 🚀 Quick Start
+---
 
-### Option 1: Docker (Recommended)
+## ✨ 特性亮点
+
+| | 特性 | 说明 |
+|---|---|---|
+| 🌐 | **浏览器全流程操控** | 部署一次，任何设备的浏览器即可完成全流程操作 —— 权限审批、方案协商、任务管控，手机上也能用，无需安装客户端 |
+| 🤖 | **多 Agent 协作** | Team（固定分工）/ Swarm（动态协商）/ SubAgent（主从委派）三种协作模式，复杂任务自动分工 |
+| 🔒 | **深度安全架构** | 8 层 Bash 沙箱 + 14 步权限管道 + 289 项安全测试，命令执行前必过安全关卡 |
+| 🇨🇳 | **国产大模型直连** | 千问 / DeepSeek / Moonshot 开箱即用，国内网络直连，无需科学上网 |
+| 🐳 | **Docker 一键部署** | `docker compose up -d` 一条命令启动，数据存本地，完全私有 |
+
+---
+
+## 🎬 Demo
+
+### 写入文件
+![写入文件演示](https://zhikundemo.oss-cn-beijing.aliyuncs.com/hub/%E5%AE%8C%E6%95%B4.gif)
+
+### iPad 浏览器全流程操控
+![iPad浏览器操控演示](https://zhikundemo.oss-cn-beijing.aliyuncs.com/hub/%E8%B4%AA%E5%90%83%E8%9B%87.gif)
+
+---
+
+## ⚡ 快速开始
+
+### 方式一：Docker 部署（推荐）
+
+只需 3 步，从零到可用：
 
 ```bash
-git clone https://github.com/zhikuncode/zhikuncode.git
+# 1. 克隆仓库
+git clone https://github.com/zhikunqingtao/zhikuncode.git
 cd zhikuncode
 
-# Configure your API key
-cp .env .env.local
-# Edit .env.local and set LLM_API_KEY=your-api-key
+# 2. 配置 API Key
+cp .env.example .env
+# 编辑 .env，填入你的 LLM API Key（默认使用千问/DashScope，国内直连）
 
-# Start
+# 3. 启动
 docker compose up -d
-
-# Open http://localhost:8080
 ```
 
-### Option 2: Local Development
+启动完成后，打开浏览器访问 **http://localhost:8080** 即可使用。
 
-**Prerequisites:** JDK 21, Node.js 20+, Python 3.11+
+> **系统要求：** Docker 20.10+，Docker Compose V2，建议 4GB+ 内存。
+
+### 方式二：本地开发
+
+**前置条件：** JDK 21、Node.js 20+、Python 3.11+
 
 ```bash
-git clone https://github.com/zhikuncode/zhikuncode.git
+git clone https://github.com/zhikunqingtao/zhikuncode.git
 cd zhikuncode
-```
 
-**1. Configure environment**
+# 配置环境变量
+cp .env.example .env
+# 编辑 .env，填入你的 LLM API Key
 
-```bash
-cp .env .env.local
-# Edit .env.local and set LLM_API_KEY=your-api-key
-```
-
-**2. Start all services**
-
-```bash
+# 一键启动三端服务
 ./start.sh
 ```
 
-This launches all three services:
-- **Backend** → `http://localhost:8080`
-- **Python Service** → `http://localhost:8000`
-- **Frontend** → `http://localhost:5173`
+三端服务会同时启动：
 
-Or start each service manually:
+| 服务 | 地址 | 说明 |
+|------|------|------|
+| **Backend** | `http://localhost:8080` | Java Spring Boot 后端，核心 API |
+| **Python Service** | `http://localhost:8000` | FastAPI 服务，代码分析 |
+| **Frontend** | `http://localhost:5173` | React 开发服务器 |
+
+<details>
+<summary><b>手动分别启动各服务</b></summary>
 
 ```bash
-# Backend
+# 后端
 cd backend && ./mvnw spring-boot:run -DskipTests
 
-# Python Service
+# Python 服务
 cd python-service
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 uvicorn src.main:app --host 0.0.0.0 --port 8000
 
-# Frontend
+# 前端
 cd frontend && npm install && npm run dev
 ```
 
-## 🏛️ Architecture
+</details>
+
+### 支持的 LLM 服务商
+
+在 `.env` 中配置 `LLM_BASE_URL` 和 `LLM_API_KEY` 即可切换：
+
+| 服务商 | Base URL | 推荐模型 | 备注 |
+|--------|----------|----------|------|
+| **千问/DashScope** | `https://dashscope.aliyuncs.com/compatible-mode/v1` | qwen3.6-plus | **默认**，国内直连 |
+| **DeepSeek** | `https://api.deepseek.com/v1` | deepseek-chat | 国内直连 |
+| **Moonshot（Kimi）** | `https://api.moonshot.cn/v1` | moonshot-v1-auto | 国内直连 |
+| **OpenAI** | `https://api.openai.com/v1` | gpt-4o | 需要外网访问 |
+| **本地 Ollama** | `http://localhost:11434/v1` | qwen2.5:latest | 完全离线 |
+
+> 任何兼容 OpenAI API 格式的服务商都可以接入，只需配置对应的 Base URL 和 API Key。
+
+---
+
+## 📊 竞品对比
+
+### 功能对比
+
+| 特性 | ZhikunCode | Aider | Cline | Cursor | Claude Code | Copilot |
+|------|:---:|:---:|:---:|:---:|:---:|:---:|
+| 开源免费 | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| 独立 Web UI | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Docker 一键自托管 | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| 国产大模型直连 | ✅ | ⚠️ 需配置 | ⚠️ 需配置 | ❌ | ❌ | ❌ |
+| 多 Agent 协作 | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| 跨设备浏览器操控 | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| 安全沙箱 | ✅ 8层 | ❌ | 基础 | N/A | 基础 | N/A |
+| MCP 工具扩展 | ✅ | ❌ | ✅ | ❌ | ✅ | ❌ |
+| 无需安装客户端 | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+
+### 安全特性对比
+
+| 安全特性 | ZhikunCode | Aider | Cline | Claude Code |
+|---------|:---:|:---:|:---:|:---:|
+| 命令执行沙箱 | 8 层检查 | ❌ | 基础确认 | 基础确认 |
+| 权限管道 | 14 步管线 | ❌ | 简单确认 | yes/no |
+| 安全测试覆盖 | 289 项 | ❌ | ❌ | ❌ |
+| 敏感路径拦截 | ✅ | ❌ | ❌ | ❌ |
+| 危险命令阻断 | ✅ | ❌ | ❌ | 部分 |
+| 环境变量白名单 | ✅ | ❌ | ❌ | ❌ |
+
+> **说明：** 以上对比基于各项目公开文档和代码，如有不准确之处欢迎提 Issue 指正。
+
+---
+
+## 🏗️ 架构概览
+
+ZhikunCode 采用三端分离架构，Java 后端负责核心编排，React 前端提供交互界面，Python 服务处理代码分析：
 
 ```
-┌─────────────┐     WebSocket/HTTP     ┌──────────────────┐
-│   Frontend   │ ◄──────────────────► │     Backend      │
-│  React/Vite  │                       │  Spring Boot 3   │
-│  :5173       │                       │  :8080           │
-└─────────────┘                       └────────┬─────────┘
-                                               │ HTTP
-                                               ▼
-                                      ┌──────────────────┐
-                                      │  Python Service   │
-                                      │  FastAPI/Uvicorn  │
-                                      │  :8000            │
-                                      └──────────────────┘
+┌──────────────────┐      WebSocket / HTTP      ┌──────────────────────┐
+│    Frontend       │ ◄────────────────────────► │      Backend          │
+│  React 18 + TS    │                            │  Java 21 + Spring    │
+│  Vite + Tailwind  │                            │  Boot 3.4            │
+│  :5173 (dev)      │                            │  :8080               │
+└──────────────────┘                            └──────────┬───────────┘
+                                                           │ HTTP
+                                                           ▼
+                                                ┌──────────────────────┐
+                                                │   Python Service      │
+                                                │   FastAPI + Uvicorn   │
+                                                │   :8000               │
+                                                └──────────────────────┘
 ```
 
-- **Backend (Java)** — Core orchestration, LLM API routing, agent management, tool execution, session persistence, and security enforcement.
-- **Frontend (React)** — Interactive chat UI, file explorer, settings panel, and real-time streaming display.
-- **Python Service** — Code analysis, AST parsing, and specialized processing tasks.
+### 各层职责
 
-## ⚙️ Configuration
+| 层 | 技术栈 | 职责 |
+|----|--------|------|
+| **后端** | Java 21, Spring Boot 3.4, WebSocket, SQLite | 核心编排引擎、LLM API 路由、Agent 管理、工具执行（25+ 内置工具）、权限管道、会话持久化 |
+| **前端** | React 18, TypeScript, Vite, TailwindCSS | 对话式交互 UI、文件浏览器、设置面板、实时流式输出、Agent 协作可视化 |
+| **Python 服务** | FastAPI, Uvicorn, Python 3.11+ | 代码分析、AST 解析、MCP 工具桥接 |
 
-Environment variables are managed via `.env` file. Key settings:
+### Docker 部署架构
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `LLM_API_KEY` | ✅ | Your LLM provider API key |
-| `ZHIKUN_PORT` | — | Host port mapping (default: `8080`) |
-| `SPRING_PROFILES_ACTIVE` | — | Spring profile (default: `production`) |
-| `JAVA_OPTS` | — | JVM options |
-| `WORKSPACE_PATH` | — | Project workspace to mount |
+生产环境通过 Docker 单容器部署，三端服务打包在同一个镜像中：
 
-See [`.env`](.env) for the full configuration template.
+```
+┌─────────────────────────────────────────────────┐
+│                Docker Container                  │
+│  ┌───────────┐  ┌───────────┐  ┌──────────────┐ │
+│  │  Backend   │  │  Python   │  │   Frontend   │ │
+│  │  :8080     │  │  :8000    │  │  (静态文件)   │ │
+│  └───────────┘  └───────────┘  └──────────────┘ │
+│                                                  │
+│  Volume: zhikun-data (SQLite + 会话数据)          │
+│  Volume: workspace (用户项目代码)                  │
+├──────────────────────────────────────────────────┤
+│  Port: 8080 → 宿主机                              │
+└──────────────────────────────────────────────────┘
+```
 
-## 🤝 Contributing
+---
 
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to get started.
+## 🔒 安全架构
 
-## 📄 License
+安全是 ZhikunCode 的核心设计原则。每一条命令执行前，都要经过多层安全检查。
 
-This project is licensed under the [MIT License](LICENSE).
+### 8 层 Bash 安全沙箱
+
+所有 Shell 命令执行前，必须通过以下 8 层检查：
+
+| 层级 | 检查内容 | 说明 |
+|------|---------|------|
+| **第 1 层** | 命令解析 | 解析命令结构，识别管道、重定向、子命令 |
+| **第 2 层** | 黑名单过滤 | 阻断已知危险命令（`rm -rf /`、`mkfs`、`dd`、`format` 等） |
+| **第 3 层** | 路径遍历检测 | 防止 `../` 路径穿越攻击，阻断设备路径、UNC 路径 |
+| **第 4 层** | 权限验证 | 14 步权限管道决策，敏感操作需用户审批 |
+| **第 5 层** | 沙箱执行 | 破坏性命令强制在 Docker 沙箱中执行（只读文件系统 + 内存限制 + 网络隔离） |
+| **第 6 层** | 参数净化 | 环境变量白名单、命令注入防护 |
+| **第 7 层** | 输出校验 | 检测异常输出，敏感信息脱敏 |
+| **第 8 层** | 审计日志 | 完整记录每次命令执行，可追溯 |
+
+### 14 步权限管道
+
+权限管道采用**短路返回**设计 —— 命中任何拦截规则立即返回，不继续执行：
+
+```
+请求进入
+  │
+  ├─ 1. Deny 规则检查 ──────────── 命中 → 拒绝
+  ├─ 2. Ask 规则检查 ───────────── 命中 → 询问用户
+  ├─ 3. 工具自身权限检查 ────────── 工具拒绝 → 阻断
+  ├─ 4. 用户交互需求检查 ────────── 需要交互 → 询问
+  ├─ 5. 内容级危险检测 ─────────── rm -rf、chmod 777、eval、sudo 等 → 强制询问
+  ├─ 6. 写路径安全检查 ─────────── 危险目录、符号链接 → 阻断
+  ├─ 7. 危险删除检测 ───────────── rm 危险目标 → 阻断
+  ├─ 8. 环境变量检查 ───────────── 非白名单变量 → 阻断
+  ├─ 9. Hook 注入检查 ──────────── PreToolUse Hook 可阻断
+  ├─ 10. 分类器评估 ────────────── AI 风险评估（AUTO 模式）
+  ├─ 11. 沙箱规则评估 ──────────── 沙箱内操作自动放行
+  ├─ 12. 紧急杀开关 ────────────── 管理员可临时禁用 AUTO
+  ├─ 13. AlwaysAllow 规则 ─────── 匹配白名单 → 放行
+  └─ 14. 模式分支决策 ──────────── DEFAULT/PLAN/AUTO/BYPASS 等模式最终决策
+```
+
+### 受保护路径
+
+以下路径即使在 bypass 模式下也需要用户确认：
+
+- `.git` — Git 仓库数据
+- `.env` — 环境变量和密钥
+- `.ssh` — SSH 密钥
+- `.gnupg` — GPG 密钥
+- `.aws` — AWS 凭证
+
+### 安全测试
+
+- **289 项安全测试**覆盖全部安全路径
+- 包含命令注入、路径穿越、权限绕过等攻击场景
+- 每次代码变更都会执行完整安全测试套件
+
+---
+
+## 📱 浏览器全流程操控
+
+这是 ZhikunCode 的核心差异化特性。与 Cursor、Cline 等需要安装桌面客户端或 IDE 插件的工具不同，ZhikunCode 是一个独立的 Web 应用 —— 部署一次，任何设备的浏览器都能用。
+
+### 为什么这很重要？
+
+| 场景 | 传统 AI 编程工具 | ZhikunCode |
+|------|-----------------|------------|
+| 通勤路上想审批一个权限请求 | ❌ 必须打开电脑 | ✅ 手机浏览器直接操作 |
+| 同事想试用你的 AI 编程助手 | ❌ 需要安装 VS Code + 插件 | ✅ 发一个链接就行 |
+| 部署到团队服务器多人共用 | ❌ 每人都要装客户端 | ✅ 浏览器打开就用 |
+| iPad 上改代码 | ❌ 没有原生客户端 | ✅ Safari/Chrome 直接用 |
+
+### 完整的浏览器操控能力
+
+通过浏览器，你可以完成 AI 编程的全部流程：
+
+- **对话式编程** — 输入自然语言需求，Agent 自动生成代码，实时流式输出
+- **权限审批** — 每个敏感操作都会弹出审批请求，你可以 允许/拒绝/修改
+- **方案协商** — Agent 提出方案后可以在浏览器中讨论、修改、确认
+- **任务管控** — 查看任务进度、中断执行、重新分配
+- **文件浏览** — 在浏览器中直接查看和导航项目文件树
+- **Agent 协作可视化** — 多 Agent 模式下实时查看各 Agent 工作状态
+
+### 实时通信
+
+前后端通过 WebSocket 保持实时连接：
+
+- **流式输出** — LLM 响应逐字输出，无需等待完成
+- **权限冒泡** — 子 Agent 的权限请求实时推送到浏览器
+- **状态同步** — Agent 工作状态变化即时反映在 UI 上
+
+---
+
+## 🤖 多 Agent 协作
+
+ZhikunCode 提供三种 Agent 协作模式，适用于不同复杂度的任务：
+
+### Team 模式 — 固定分工
+
+预定义角色的团队协作。每个 Agent 有明确的职责和工具集。
+
+```
+┌─────────────┐
+│   Leader     │  任务分配与结果聚合
+└──────┬──────┘
+       │
+  ┌────┴────┐
+  ▼         ▼
+┌──────┐ ┌──────┐
+│Agent A│ │Agent B│  并行执行，独立工具集
+│后端开发│ │前端开发│
+└──────┘ └──────┘
+```
+
+- 适用场景：前后端分离开发、测试+开发协作
+- 通过 TeamMailbox 进行 Agent 间消息传递
+- 通过 SharedTaskList 共享任务队列
+
+### Swarm 模式 — 动态协商
+
+基于 Java 21 虚拟线程的动态多 Worker 协作，支持四阶段工作流：
+
+```
+Research → Synthesis → Implementation → Verification
+```
+
+- 适用场景：复杂重构、大规模代码迁移
+- Worker 数量动态调整
+- 权限冒泡到 UI，由用户统一审批
+- 实时状态推送（通过 WebSocket）
+
+### SubAgent 模式 — 主从委派
+
+主 Agent 将子任务委派给独立的子 Agent 执行：
+
+- 适用场景：需要隔离执行环境的任务
+- 支持 Git Worktree 隔离（独立工作目录）
+- 支持 Fork 模式（继承父 Agent 上下文）
+- 支持后台异步执行
+
+---
+
+## 🧩 MCP 工具扩展
+
+ZhikunCode 实现了标准的 [MCP（Model Context Protocol）](https://modelcontextprotocol.io/) 协议，支持通过 SSE 传输层连接外部 MCP 服务：
+
+### 内置 MCP 工具
+
+| 工具 | 说明 | 来源 |
+|------|------|------|
+| **万相 2.5 图像生成** | AI 绘画，输入文本生成图片 | DashScope MCP |
+| **万相 2.5 图像编辑** | AI 图像编辑（图生图） | DashScope MCP |
+| **网络搜索 Pro** | 联网搜索，返回网页摘要 | DashScope MCP |
+
+### 自定义 MCP 工具
+
+在 `configuration/mcp/mcp_capability_registry.json` 中注册新的 MCP 工具：
+
+```json
+{
+  "id": "mcp_your_tool",
+  "name": "你的工具名称",
+  "toolName": "mcp_server_tool_name",
+  "sseUrl": "https://your-mcp-server/sse",
+  "domain": "your_domain",
+  "category": "MCP_TOOL",
+  "enabled": true
+}
+```
+
+---
+
+## 🛠️ 内置工具集
+
+ZhikunCode 内置 25+ 工具，覆盖开发全流程：
+
+| 分类 | 工具 | 说明 |
+|------|------|------|
+| **文件操作** | FileRead、FileWrite、FileEdit | 读取、写入、编辑文件 |
+| **代码搜索** | GrepTool、GlobTool、ToolSearch | 正则搜索、文件匹配、工具搜索 |
+| **命令执行** | BashTool | 安全沙箱内执行 Shell 命令 |
+| **Git 操作** | GitTool、Worktree | Git 命令执行、Worktree 管理 |
+| **Web 工具** | WebSearch、WebFetch、WebBrowser | 网络搜索、网页抓取、浏览器自动化 |
+| **Agent 协作** | AgentTool | 创建和管理子 Agent |
+| **任务管理** | 任务创建/列表/分配 | SharedTaskList 任务协作 |
+| **定时任务** | CronCreate、CronList、CronDelete | 定时任务管理 |
+| **计划模式** | EnterPlanMode、ExitPlanMode、VerifyPlan | 先规划后执行的工作流 |
+| **MCP 扩展** | MCP 工具适配器 | 连接外部 MCP 服务 |
+| **监控** | MonitorTool、CtxInspect | 系统监控、上下文检查 |
+
+---
+
+## ⚙️ 配置说明
+
+### 环境变量
+
+环境变量通过 `.env` 文件管理。复制 `.env.example` 后按需修改：
+
+| 变量 | 必填 | 默认值 | 说明 |
+|------|:---:|--------|------|
+| `LLM_API_KEY` | ✅ | — | LLM 服务商的 API Key |
+| `LLM_BASE_URL` | — | DashScope | LLM API 地址 |
+| `LLM_DEFAULT_MODEL` | — | qwen3.6-plus | 默认模型 |
+| `LLM_MODELS` | — | 千问系列 | 可用模型列表（逗号分隔） |
+| `ZHIKUN_PORT` | — | 8080 | Docker 映射的宿主机端口 |
+| `SPRING_PROFILES_ACTIVE` | — | production | Spring 配置文件 |
+| `JAVA_OPTS` | — | -Xms256m -Xmx1024m | JVM 参数 |
+| `WORKSPACE_PATH` | — | ./workspace | 挂载到容器的工作目录 |
+
+### Docker 资源限制
+
+默认资源配置（可在 `docker-compose.yml` 中调整）：
+
+| 配置项 | 默认值 |
+|--------|--------|
+| 内存上限 | 2GB |
+| 内存预留 | 512MB |
+| 健康检查间隔 | 30s |
+| 启动等待时间 | 60s |
+
+---
+
+## ❓ FAQ
+
+<details>
+<summary><b>Q1：支持哪些大模型？</b></summary>
+
+支持所有兼容 OpenAI API 格式的模型，包括：
+
+- **千问 / DashScope**（国内直连，默认推荐）
+- **DeepSeek**（国内直连）
+- **Moonshot / Kimi**（国内直连）
+- **OpenAI GPT-4o / GPT-4**（需外网访问）
+- **Anthropic Claude**（通过 OpenAI 兼容 API）
+- **本地模型**（通过 Ollama、vLLM 等）
+
+只要是兼容 OpenAI API 格式的服务商，配置好 `LLM_BASE_URL` 和 `LLM_API_KEY` 就能用。
+
+</details>
+
+<details>
+<summary><b>Q2：Docker 部署需要什么配置？</b></summary>
+
+**最低要求：**
+- Docker 20.10+
+- Docker Compose V2
+- 4GB+ 可用内存
+- 网络能访问 LLM API 端点（用千问的话国内网络就行）
+
+**部署只需 3 步：**
+```bash
+git clone https://github.com/zhikunqingtao/zhikuncode.git && cd zhikuncode
+cp .env.example .env  # 编辑填入 API Key
+docker compose up -d  # 启动
+```
+
+打开 `http://localhost:8080` 即可使用。
+
+</details>
+
+<details>
+<summary><b>Q3：数据存在哪里？安全吗？</b></summary>
+
+**所有数据存在本地**，不会发送到任何第三方服务器：
+
+- **会话数据** — SQLite 数据库，存储在 Docker Volume `zhikun-data` 中
+- **项目代码** — 通过 Volume 挂载你本地的项目目录
+- **API Key** — 只存在你的 `.env` 文件和运行中的容器环境变量中
+
+ZhikunCode 不运行任何遥测服务。API Key 直连你配置的 LLM 服务商，中间不经过任何代理或中转服务器。
+
+</details>
+
+<details>
+<summary><b>Q4：支持内网 / 离线部署吗？</b></summary>
+
+**支持。** Docker 部署后完全在内网运行。
+
+- **使用国产模型（千问/DeepSeek）：** 国内网络直连，无需科学上网
+- **完全离线：** 搭配 Ollama 运行本地模型，`LLM_BASE_URL=http://host.docker.internal:11434/v1`
+- **企业内网：** 只需确保服务器能访问 LLM API 端点即可
+
+</details>
+
+<details>
+<summary><b>Q5：多 Agent 协作怎么用？</b></summary>
+
+ZhikunCode 提供三种协作模式：
+
+- **Team** — 固定分工：创建团队后，每个 Agent 按角色分工并行执行
+- **Swarm** — 动态协商：自动拆解任务，Worker 动态分配，四阶段工作流
+- **SubAgent** — 主从委派：主 Agent 将子任务委派给子 Agent，支持隔离执行
+
+在对话中直接描述需求即可触发，例如：
+> "重构这个项目的用户认证模块，一个 Agent 负责后端 API，一个负责前端页面"
+
+Agent 会自动选择合适的协作模式。
+
+</details>
+
+<details>
+<summary><b>Q6：和 VS Code 插件（Copilot/Cline）冲突吗？</b></summary>
+
+**不冲突。** ZhikunCode 是独立的 Web 应用，不依赖任何 IDE，不需要安装插件。
+
+你可以同时使用：
+- **VS Code + Copilot** —— 做行级代码补全
+- **ZhikunCode** —— 做对话式 Agent 编程、复杂任务编排
+
+两者互补，不冲突。
+
+</details>
+
+<details>
+<summary><b>Q7：怎么贡献代码？</b></summary>
+
+欢迎贡献！详细流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+简单步骤：
+1. Fork 仓库
+2. 创建功能分支 (`git checkout -b feature/your-feature`)
+3. 提交代码
+4. 创建 Pull Request
+
+推荐从标记为 `good first issue` 的 Issue 开始。
+
+**开发环境需要：** JDK 21、Node.js 20+、Python 3.11+、Maven 3.9+
+
+</details>
+
+<details>
+<summary><b>Q8：为什么选择 Java + React + Python 三端架构？</b></summary>
+
+每种技术选型都有明确的理由：
+
+- **Java 21 + Spring Boot（后端）：**
+  - 强类型 + 成熟的企业级生态，代码可维护性强
+  - Spring WebSocket 原生支持实时通信
+  - Virtual Thread（虚拟线程）天然适合多 Agent 并发执行
+  - 企业 IT 团队容易接受和部署
+
+- **React 18 + TypeScript（前端）：**
+  - 组件化开发，状态管理成熟（Zustand）
+  - TypeScript 提供类型安全
+  - Vite 构建速度快，开发体验好
+  - TailwindCSS 实现高效的 UI 开发
+
+- **Python FastAPI（分析服务）：**
+  - Python 生态在代码分析、AST 解析方面成熟
+  - FastAPI 异步性能好
+  - 作为独立服务，不影响主后端的稳定性
+
+</details>
+
+---
+
+## 🤝 贡献
+
+我们欢迎任何形式的贡献 —— Bug 修复、新功能、文档改进都可以。
+
+详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+---
+
+## 📄 开源协议
+
+本项目使用 [MIT License](LICENSE) 开源协议。
+
+---
+
+## 📬 联系
+
+- **邮箱：** alizhikun@gmail.com
+- **GitHub Issues：** [提交问题](https://github.com/zhikunqingtao/zhikuncode/issues)
+
+---
+
+## ⭐ Star History
+
+如果这个项目对你有帮助，欢迎点个 Star ⭐
+
+<div align="center">
+  <a href="https://star-history.com/#zhikunqingtao/zhikuncode&Date">
+    <img src="https://api.star-history.com/svg?repos=zhikunqingtao/zhikuncode&type=Date" alt="Star History Chart" width="600" />
+  </a>
+</div>
+
+---
+
+<div align="center">
+  <p>用 ❤️ 和 AI 构建</p>
+  <p><sub>三周业余时间，~77K 行代码 —— 证明一个人加上 AI 也能做出完整的产品</sub></p>
+</div>

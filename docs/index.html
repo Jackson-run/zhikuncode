@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZhikunCode - 开源 AI 编程助手 | Web UI · 多 Agent 协作 · Docker 自托管</title>
+  <meta name="description" content="ZhikunCode 是开源的 AI 编程助手，自带完整 Web UI、多 Agent 协作、Docker 一键自托管。支持国产大模型直连，数据完全私有。三周 77K 行代码打造。">
+  <meta name="keywords" content="AI编程,开源,编程助手,Docker,自托管,国产大模型,Web UI,多Agent,安全架构,MCP">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="ZhikunCode - 开源 AI 编程助手">
+  <meta property="og:description" content="浏览器即操控台，一键部署的 AI 编程助手。自带 Web UI、多 Agent 协作、Docker 一键自托管。">
+  <meta property="og:image" content="https://zhikunqingtao.github.io/zhikuncode/assets/og-image.png">
+  <meta property="og:url" content="https://zhikunqingtao.github.io/zhikuncode/">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ZhikunCode - 开源 AI 编程助手">
+  <meta name="twitter:description" content="浏览器即操控台，一键部署的 AI 编程助手。Web UI + 多 Agent 协作 + Docker 自托管，数据完全私有。">
+  <meta name="twitter:image" content="https://zhikunqingtao.github.io/zhikuncode/assets/og-image.png">
+
+  <!-- JSON-LD 结构化数据 -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "ZhikunCode",
+    "description": "开源 AI 编程助手，自带 Web UI、多 Agent 协作、Docker 一键自托管，支持国产大模型直连",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Linux, macOS, Windows (Docker)",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "url": "https://zhikunqingtao.github.io/zhikuncode/",
+    "downloadUrl": "https://github.com/zhikunqingtao/zhikuncode",
+    "license": "https://opensource.org/licenses/MIT",
+    "author": {
+      "@type": "Organization",
+      "name": "ZhikunCode Contributors"
+    },
+    "datePublished": "2025-01-01",
+    "softwareVersion": "1.0.0"
+  }
+  </script>
+
+  <style>
+    /* === Reset & Base === */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    a { color: #58a6ff; text-decoration: none; transition: color 0.2s; }
+    a:hover { text-decoration: underline; color: #79c0ff; }
+    code { font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; }
+
+    /* === Layout === */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    section { padding: 80px 0; }
+
+    /* === Nav === */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(13, 17, 23, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid #21262d;
+      padding: 12px 0;
+    }
+    .nav .container { display: flex; align-items: center; justify-content: space-between; }
+    .nav-brand { font-size: 1.25rem; font-weight: 700; color: #e6edf3; }
+    .nav-brand:hover { text-decoration: none; color: #58a6ff; }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { color: #8b949e; font-size: 0.875rem; }
+    .nav-links a:hover { color: #e6edf3; text-decoration: none; }
+
+    /* === Hero === */
+    .hero {
+      text-align: center;
+      padding: 160px 0 100px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(88, 166, 255, 0.08) 0%, transparent 70%);
+      position: relative;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at 20% 50%, rgba(88, 166, 255, 0.03) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 50%, rgba(35, 134, 54, 0.03) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(88, 166, 255, 0.1);
+      border: 1px solid rgba(88, 166, 255, 0.2);
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-size: 0.875rem;
+      color: #58a6ff;
+      margin-bottom: 24px;
+    }
+    .hero h1 { font-size: 3.5rem; font-weight: 800; margin-bottom: 20px; letter-spacing: -0.02em; line-height: 1.2; }
+    .hero h1 span { color: #58a6ff; }
+    .hero .tagline {
+      font-size: 1.25rem; color: #8b949e; max-width: 640px; margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+    .hero .cta-group { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 28px; border-radius: 8px; font-size: 1rem; font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s; border: none; cursor: pointer;
+    }
+    .btn:hover { transform: translateY(-2px); text-decoration: none; }
+    .btn-primary { background: #238636; color: #fff; }
+    .btn-primary:hover { box-shadow: 0 4px 24px rgba(35, 134, 54, 0.4); }
+    .btn-secondary { background: #21262d; color: #e6edf3; border: 1px solid #30363d; }
+    .btn-secondary:hover { box-shadow: 0 4px 24px rgba(88, 166, 255, 0.15); border-color: #58a6ff; }
+    .hero-stats {
+      display: flex; gap: 48px; justify-content: center; margin-top: 56px;
+      padding-top: 40px; border-top: 1px solid #21262d;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat .stat-value { font-size: 2rem; font-weight: 800; color: #58a6ff; }
+    .hero-stat .stat-label { font-size: 0.875rem; color: #8b949e; margin-top: 4px; }
+
+    /* === Demo === */
+    .demo { text-align: center; background: #0d1117; }
+    .demo-gallery {
+      max-width: 900px; margin: 32px auto 0;
+      display: flex; flex-direction: column; gap: 48px;
+    }
+    .demo-item { text-align: center; }
+    .demo-item h3 { font-size: 1.25rem; font-weight: 700; color: #e6edf3; margin-bottom: 16px; }
+    .demo-item img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #21262d; }
+
+    /* === Features === */
+    .features { background: #0d1117; }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 48px;
+    }
+    .feature-card {
+      background: #161b22; border: 1px solid #21262d; border-radius: 12px;
+      padding: 32px; transition: border-color 0.3s, transform 0.3s;
+    }
+    .feature-card:hover { border-color: #58a6ff; transform: translateY(-4px); }
+    .feature-card .icon { font-size: 2.25rem; margin-bottom: 16px; display: block; }
+    .feature-card h3 { font-size: 1.125rem; font-weight: 700; margin-bottom: 10px; color: #e6edf3; }
+    .feature-card p { color: #8b949e; font-size: 0.925rem; line-height: 1.65; }
+
+    /* === Security === */
+    .security {
+      background: radial-gradient(ellipse at 50% 50%, rgba(88, 166, 255, 0.04) 0%, #0d1117 70%);
+    }
+    .security-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 48px;
+    }
+    .security-item {
+      text-align: center;
+      background: #161b22; border: 1px solid #21262d; border-radius: 16px;
+      padding: 40px 24px; transition: border-color 0.3s;
+    }
+    .security-item:hover { border-color: #f0883e; }
+    .security-item .big-number {
+      font-size: 3.5rem; font-weight: 800; color: #f0883e;
+      line-height: 1; margin-bottom: 8px;
+    }
+    .security-item .unit { font-size: 1.25rem; color: #f0883e; font-weight: 600; }
+    .security-item .desc { color: #8b949e; font-size: 0.925rem; margin-top: 12px; line-height: 1.5; }
+
+    /* === Comparison === */
+    .comparison { background: #0d1117; }
+    .comparison .table-wrap { overflow-x: auto; margin-top: 48px; border-radius: 12px; border: 1px solid #21262d; }
+    .comparison table { width: 100%; border-collapse: collapse; min-width: 600px; }
+    .comparison th, .comparison td {
+      padding: 14px 20px; text-align: center; border-bottom: 1px solid #21262d;
+    }
+    .comparison th {
+      background: #161b22; color: #8b949e; font-weight: 600; font-size: 0.875rem;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .comparison th:nth-child(2) { color: #58a6ff; }
+    .comparison td { font-size: 0.95rem; }
+    .comparison td:first-child { text-align: left; font-weight: 600; color: #e6edf3; }
+    .comparison tr:last-child td { border-bottom: none; }
+    .comparison tr:hover td { background: rgba(88, 166, 255, 0.03); }
+
+    /* === Quick Start === */
+    .quickstart {
+      background: radial-gradient(ellipse at 50% 100%, rgba(35, 134, 54, 0.06) 0%, #0d1117 70%);
+    }
+    .code-block {
+      background: #161b22; border: 1px solid #21262d; border-radius: 12px;
+      padding: 28px 32px; margin-top: 36px; overflow-x: auto;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 0.925rem;
+      line-height: 2; color: #c9d1d9;
+    }
+    .code-block .comment { color: #8b949e; }
+    .code-block .command { color: #79c0ff; }
+
+    /* === Section Titles === */
+    .section-title {
+      text-align: center; font-size: 2.25rem; font-weight: 800;
+      margin-bottom: 16px; letter-spacing: -0.01em;
+    }
+    .section-subtitle { text-align: center; color: #8b949e; max-width: 600px; margin: 0 auto; font-size: 1.05rem; }
+
+    /* === Footer === */
+    footer {
+      text-align: center; padding: 56px 0; border-top: 1px solid #21262d; color: #8b949e;
+      background: #0d1117;
+    }
+    footer .footer-links {
+      display: flex; gap: 32px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap;
+    }
+    footer .footer-links a { color: #8b949e; font-size: 0.925rem; }
+    footer .footer-links a:hover { color: #58a6ff; }
+    footer .copyright { font-size: 0.875rem; color: #484f58; }
+
+    /* === Responsive === */
+    @media (max-width: 1200px) {
+      .hero h1 { font-size: 2.75rem; }
+      .container { padding: 0 20px; }
+    }
+    @media (max-width: 768px) {
+      .nav-links { gap: 16px; }
+      .nav-links a { font-size: 0.8rem; }
+      .hero { padding: 120px 0 64px; }
+      .hero h1 { font-size: 2rem; }
+      .hero .tagline { font-size: 1rem; margin-bottom: 28px; }
+      .hero-stats { gap: 24px; flex-wrap: wrap; }
+      .hero-stat .stat-value { font-size: 1.5rem; }
+      .features-grid { grid-template-columns: 1fr; }
+      .security-grid { grid-template-columns: 1fr; }
+      .section-title { font-size: 1.75rem; }
+      section { padding: 48px 0; }
+      .comparison th, .comparison td { padding: 10px 12px; font-size: 0.85rem; }
+    }
+    @media (max-width: 375px) {
+      .hero { padding: 100px 0 48px; }
+      .hero h1 { font-size: 1.65rem; }
+      .hero-badge { font-size: 0.75rem; padding: 4px 12px; }
+      .btn { padding: 10px 18px; font-size: 0.875rem; }
+      .code-block { padding: 16px; font-size: 0.8rem; line-height: 1.8; }
+      .security-item .big-number { font-size: 2.5rem; }
+      .section-title { font-size: 1.5rem; }
+      footer .footer-links { gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="container">
+      <a href="#" class="nav-brand">ZhikunCode</a>
+      <div class="nav-links">
+        <a href="#features">特性</a>
+        <a href="#security">安全</a>
+        <a href="#comparison">对比</a>
+        <a href="#quickstart">快速开始</a>
+        <a href="https://github.com/zhikunqingtao/zhikuncode" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.875rem;">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <span class="hero-badge">开源 · 三周 77K 行代码 · MIT License</span>
+      <h1><span>ZhikunCode</span></h1>
+      <p class="tagline">浏览器即操控台，一键部署的 AI 编程助手<br>多 Agent 协作 · Docker 自托管 · 国产大模型直连 · 数据完全私有</p>
+      <div class="cta-group">
+        <a href="https://github.com/zhikunqingtao/zhikuncode" class="btn btn-primary">&#11088; Star on GitHub</a>
+        <a href="#quickstart" class="btn btn-secondary">&#128640; 快速开始</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="stat-value">77K+</div>
+          <div class="stat-label">行代码</div>
+        </div>
+        <div class="hero-stat">
+          <div class="stat-value">47</div>
+          <div class="stat-label">内置工具</div>
+        </div>
+        <div class="hero-stat">
+          <div class="stat-value">8 层</div>
+          <div class="stat-label">安全架构</div>
+        </div>
+        <div class="hero-stat">
+          <div class="stat-value">3 周</div>
+          <div class="stat-label">开发周期</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Demo -->
+  <section class="demo" id="demo">
+    <div class="container">
+      <h2 class="section-title">看看它能做什么</h2>
+      <p class="section-subtitle">一句话生成完整功能，多 Agent 协作完成复杂任务</p>
+      <div class="demo-gallery">
+        <div class="demo-item">
+          <h3>写入文件</h3>
+          <img src="https://zhikundemo.oss-cn-beijing.aliyuncs.com/hub/%E5%AE%8C%E6%95%B4.gif" alt="写入文件演示" />
+        </div>
+        <div class="demo-item">
+          <h3>iPad 浏览器全流程操控</h3>
+          <img src="https://zhikundemo.oss-cn-beijing.aliyuncs.com/hub/%E8%B4%AA%E5%90%83%E8%9B%87.gif" alt="iPad浏览器操控演示" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="container">
+      <h2 class="section-title">核心特性</h2>
+      <p class="section-subtitle">不是又一个 Copilot 插件，而是独立运行、完整可控的 AI 编程平台</p>
+      <div class="features-grid">
+        <div class="feature-card">
+          <span class="icon">&#127760;</span>
+          <h3>浏览器全流程操控</h3>
+          <p>部署一次，任何设备浏览器全流程操控。权限审批、方案协商、任务管控，手机和电脑体验一致，无需安装任何客户端。</p>
+        </div>
+        <div class="feature-card">
+          <span class="icon">&#128051;</span>
+          <h3>Docker 一键部署</h3>
+          <p><code>docker compose up -d</code> 即可启动。数据完全私有，适合企业内网部署。端口 8080，打开即用。</p>
+        </div>
+        <div class="feature-card">
+          <span class="icon">&#127464;&#127475;</span>
+          <h3>国产大模型直连</h3>
+          <p>千问 / DashScope 开箱即用，无需科学上网，国内网络满速响应。也支持 OpenAI 兼容 API。</p>
+        </div>
+        <div class="feature-card">
+          <span class="icon">&#128274;</span>
+          <h3>8 层安全架构</h3>
+          <p>8 层 Bash 沙箱 + 14 步权限管道 + 289 项安全测试。不是"能跑就行"，而是生产级安全保障。</p>
+        </div>
+        <div class="feature-card">
+          <span class="icon">&#129302;</span>
+          <h3>多 Agent 协作</h3>
+          <p>Team / Swarm / SubAgent 三种协作模式，处理复杂的跨文件、跨模块任务，效率倍增。</p>
+        </div>
+        <div class="feature-card">
+          <span class="icon">&#129513;</span>
+          <h3>47 个内置工具</h3>
+          <p>文件操作、终端执行、搜索替换、MCP 扩展……开箱即有 47 个内置工具，标准 MCP 协议支持自定义扩展。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Security -->
+  <section class="security" id="security">
+    <div class="container">
+      <h2 class="section-title">安全不是附加功能，是核心架构</h2>
+      <p class="section-subtitle">三层纵深防御，每一层都有明确的职责边界</p>
+      <div class="security-grid">
+        <div class="security-item">
+          <div class="big-number">8</div>
+          <div class="unit">层 Bash 沙箱</div>
+          <div class="desc">命令白名单、路径约束、超时熔断、资源配额……层层拦截恶意操作</div>
+        </div>
+        <div class="security-item">
+          <div class="big-number">14</div>
+          <div class="unit">步权限管道</div>
+          <div class="desc">从用户意图解析到最终执行，14 步流水线确保每一步都经过安全审查</div>
+        </div>
+        <div class="security-item">
+          <div class="big-number">289</div>
+          <div class="unit">项安全测试</div>
+          <div class="desc">覆盖注入攻击、路径穿越、权限提升等场景，CI 管道强制通过</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison -->
+  <section class="comparison" id="comparison">
+    <div class="container">
+      <h2 class="section-title">和同类工具对比</h2>
+      <p class="section-subtitle">独立部署、浏览器驱动、数据私有——这才是我们的核心差异</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>能力</th>
+              <th>ZhikunCode</th>
+              <th>Aider</th>
+              <th>Cline</th>
+              <th>Cursor</th>
+              <th>Claude Code</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>开源</td><td>&#9989;</td><td>&#9989;</td><td>&#9989;</td><td>&#10060;</td><td>&#10060;</td></tr>
+            <tr><td>独立 Web UI</td><td>&#9989;</td><td>&#10060;</td><td>&#10060;</td><td>&#10060;</td><td>&#10060;</td></tr>
+            <tr><td>Docker 自托管</td><td>&#9989;</td><td>&#10060;</td><td>&#10060;</td><td>&#10060;</td><td>&#10060;</td></tr>
+            <tr><td>多 Agent 协作</td><td>&#9989;</td><td>&#10060;</td><td>&#10060;</td><td>&#10060;</td><td>&#10060;</td></tr>
+            <tr><td>国产大模型直连</td><td>&#9989;</td><td>&#9888;&#65039;</td><td>&#9888;&#65039;</td><td>&#10060;</td><td>&#10060;</td></tr>
+            <tr><td>跨设备浏览器访问</td><td>&#9989;</td><td>&#10060;</td><td>&#10060;</td><td>&#10060;</td><td>&#10060;</td></tr>
+            <tr><td>深度安全架构</td><td>&#9989;</td><td>&#10060;</td><td>&#10060;</td><td>&#10060;</td><td>&#10060;</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Start -->
+  <section class="quickstart" id="quickstart">
+    <div class="container">
+      <h2 class="section-title">3 步开始</h2>
+      <p class="section-subtitle">从零到可用，只需 1 分钟</p>
+      <div class="code-block">
+        <span class="comment"># 1. 克隆仓库</span><br>
+        <span class="command">git clone https://github.com/zhikunqingtao/zhikuncode.git &amp;&amp; cd zhikuncode</span><br><br>
+        <span class="comment"># 2. 配置（编辑 .env，填入你的 API Key）</span><br>
+        <span class="command">cp .env.example .env</span><br><br>
+        <span class="comment"># 3. 启动</span><br>
+        <span class="command">docker compose up -d</span><br><br>
+        <span class="comment"># &#127881; 打开 http://localhost:8080 开始使用</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-links">
+        <a href="https://github.com/zhikunqingtao/zhikuncode">GitHub</a>
+        <a href="https://github.com/zhikunqingtao/zhikuncode/blob/main/LICENSE">MIT License</a>
+        <a href="https://github.com/zhikunqingtao/zhikuncode/issues">提交 Issue</a>
+        <a href="https://github.com/zhikunqingtao/zhikuncode/blob/main/CONTRIBUTING.md">参与贡献</a>
+      </div>
+      <p class="copyright">Built with &#10084;&#65039; by ZhikunCode Contributors</p>
+    </div>
+  </footer>
+
+</body>
+</html>

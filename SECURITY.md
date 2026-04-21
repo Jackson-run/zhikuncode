@@ -14,7 +14,7 @@ ZhikunCode incorporates multiple layers of security to protect users and their e
 
 If you discover a security vulnerability, please report it responsibly:
 
-1. Email **alizhikun@gamil.com** with a detailed description
+1. Email **alizhikun@gmail.com** with a detailed description
 2. Include steps to reproduce the vulnerability
 3. Allow reasonable time for a fix before public disclosure
 

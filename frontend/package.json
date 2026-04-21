@@ -1,5 +1,6 @@
 {
   "name": "ai-code-assistant-frontend",
+  "description": "Web UI frontend for ZhikunCode AI coding assistant",
   "version": "1.0.0",
   "license": "MIT",
   "author": "ZhikunCode Team",
