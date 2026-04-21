@@ -140,28 +140,30 @@ Configure `LLM_BASE_URL` and `LLM_API_KEY` in `.env` to switch providers:
 
 | Feature | ZhikunCode | Aider | Cline | Cursor | Claude Code | Copilot |
 |---------|:---:|:---:|:---:|:---:|:---:|:---:|
-| Open source & free | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Standalone Web UI | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| One-command Docker self-hosting | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Native Chinese LLM support | ✅ | ⚠️ Config needed | ⚠️ Config needed | ❌ | ❌ | ❌ |
-| Multi-Agent collaboration | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Cross-device browser control | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Security sandbox | ✅ 8 layers | ❌ | Basic | N/A | Basic | N/A |
-| MCP tool extensions | ✅ | ❌ | ✅ | ❌ | ✅ | ❌ |
-| No client installation | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Open Source & Free | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Web UI | ✅ Full-featured | ⚠️ Streamlit | ❌ | ⚠️ Web ver. | ✅ | ❌ |
+| Docker Self-hosted | ✅ Full web service | ⚠️ CLI container | ❌ | ⚠️ Enterprise | ❌ | ❌ |
+| Chinese LLM Support | ✅ Native | ⚠️ Compatible API | ⚠️ Compatible API | ❌ | ❌ | ❌ |
+| Multi-Agent | ✅ Team/Swarm/Sub | ❌ | ❌ | ✅ Multi-Agents | ✅ Sub-Agents | ✅ Agent Mode |
+| Full Browser Control¹ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Security Sandbox | ✅ 8-layer | ❌ | ❌ | ⚠️ Enterprise | ✅ OS-level | N/A |
+| MCP Tool Extension | ✅ | ⚠️ 3rd-party | ✅ | ❌ | ✅ | ✅ |
+| No Client Install | ✅ | ❌ | ❌ | ⚠️ | ✅ | ❌ |
+
+> ¹ **Full Browser Control**: After deployment, any device's browser (including mobile) can fully control the entire coding workflow — permission approval, plan negotiation, task management. This is different from Cline/Cursor's "AI controlling a browser for automated testing".
 
 ### Security Comparison
 
 | Security Feature | ZhikunCode | Aider | Cline | Claude Code |
 |-----------------|:---:|:---:|:---:|:---:|
-| Command execution sandbox | 8 layers | ❌ | Basic confirm | Basic confirm |
-| Permission pipeline | 14-step pipeline | ❌ | Simple confirm | yes/no |
-| Security test coverage | 289 tests | ❌ | ❌ | ❌ |
-| Sensitive path interception | ✅ | ❌ | ❌ | ❌ |
-| Dangerous command blocking | ✅ | ❌ | ❌ | Partial |
-| Environment variable allowlist | ✅ | ❌ | ❌ | ❌ |
+| Command Sandbox | 8-layer checks | ❌ User approval | ❌ User approval | ✅ gVisor/Firecracker |
+| Permission Pipeline | 14-step pipeline | ❌ | Simple confirm | Permission system |
+| Security Tests | 289 items | Not disclosed | Not disclosed | Not disclosed |
+| Sensitive Path Block | ✅ | ❌ | ❌ | ❌ |
+| Dangerous Cmd Block | ✅ | ❌ | ❌ | ✅ Partial |
+| Env Var Whitelist | ✅ | ❌ | ❌ | ❌ |
 
-> **Note:** The above comparison is based on each project's public documentation and source code. If anything is inaccurate, please open an Issue.
+> **Note:** Comparison based on official documentation (2025 Q2). Please [open an issue](https://github.com/zhikunqingtao/zhikuncode/issues) if any inaccuracy is found. Cursor 2.0+ and GitHub Copilot Agent Mode are relatively new features still evolving rapidly.
 
 ---
 
