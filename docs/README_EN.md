@@ -1,7 +1,7 @@
 [🇨🇳 中文版](../README.md)
 
 <div align="center">
-  <img src="assets/logo.png" alt="ZhikunCode" width="120" />
+  <img src="assets/logo.svg" alt="ZhikunCode" width="120" />
   <h1>ZhikunCode</h1>
   <p><strong>Open-Source AI Coding Assistant — Deploy Once, Control Everything from Your Browser</strong></p>
   <p>Multi-Agent Collaboration · Docker Self-Hosted · Direct Integration with Chinese LLMs · Defense-in-Depth Security</p>
@@ -191,7 +191,7 @@ ZhikunCode uses a three-tier architecture: the Java backend handles core orchest
 
 | Layer | Tech Stack | Responsibilities |
 |-------|-----------|-----------------|
-| **Backend** | Java 21, Spring Boot 3.4, WebSocket, SQLite | Core orchestration engine, LLM API routing, Agent management, tool execution (25+ built-in tools), permission pipeline, session persistence |
+| **Backend** | Java 21, Spring Boot 3.4, WebSocket, SQLite | Core orchestration engine, LLM API routing, Agent management, tool execution (47 built-in tools), permission pipeline, session persistence |
 | **Frontend** | React 18, TypeScript, Vite, TailwindCSS | Conversational UI, file browser, settings panel, real-time streaming output, Agent collaboration visualization |
 | **Python Service** | FastAPI, Uvicorn, Python 3.11+ | Code analysis, AST parsing, MCP tool bridging |
 
@@ -399,7 +399,7 @@ Register new MCP tools in `configuration/mcp/mcp_capability_registry.json`:
 
 ## 🛠️ Built-in Tools
 
-ZhikunCode ships with 25+ built-in tools covering the full development lifecycle:
+ZhikunCode ships with 47 built-in tools covering the full development lifecycle:
 
 | Category | Tools | Description |
 |----------|-------|-------------|

@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Multi-model LLM support (通义千问, DeepSeek, Moonshot, OpenAI-compatible APIs, and more)
 - Multi-agent collaboration with Team and Swarm modes
-- 50+ built-in tools (Bash, file editing, search, Git, etc.)
+- 47 built-in tools (Bash, file editing, search, Git, etc.)
 - MCP (Model Context Protocol) integration for extensible tool ecosystem
 - 8-layer Bash security pipeline with permission controls
 - WebSocket-based real-time communication
