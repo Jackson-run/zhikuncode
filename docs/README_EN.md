@@ -39,7 +39,7 @@
 |---|---|---|
 | 🌐 | **Full Browser-Based Control** | Deploy once, then manage everything from any device's browser — permission approvals, plan discussions, task management. Works on mobile. No client installation needed |
 | 🤖 | **Multi-Agent Collaboration** | Three collaboration modes: Team (fixed roles) / Swarm (dynamic negotiation) / SubAgent (parent-child delegation). Complex tasks are automatically distributed |
-| 🔒 | **Defense-in-Depth Security** | 8-layer Bash sandbox + 14-step permission pipeline + 289 security tests. Every command must pass security checks before execution |
+| 🔒 | **Defense-in-Depth Security** | 8-layer Bash sandbox + 14-step permission pipeline + 300+ security tests. Every command must pass security checks before execution |
 | 🇨🇳 | **Native Chinese LLM Support** | Qwen / DeepSeek / Moonshot work out of the box with direct connections from mainland China — no VPN required |
 | 🐳 | **One-Command Docker Deployment** | `docker compose up -d` — one command to start. Data stays local, fully private |
 
@@ -157,14 +157,14 @@ Configure `LLM_BASE_URL` and `LLM_API_KEY` in `.env` to switch providers:
 | Feature | ZhikunCode | Aider | Cline | Cursor | Claude Code | Copilot |
 |---------|:---:|:---:|:---:|:---:|:---:|:---:|
 | Open Source & Free | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Web UI | ✅ Full-featured | ⚠️ Streamlit | ❌ | ⚠️ Web ver. | ✅ | ❌ |
+| Web UI | ✅ Full-featured | ⚠️ Streamlit | ❌ | ⚠️ Web ver. | ✅ | ⚠️ GitHub.com |
 | Docker Self-hosted | ✅ Full web service | ⚠️ CLI container | ❌ | ⚠️ Enterprise | ❌ | ❌ |
 | Chinese LLM Support | ✅ Native | ⚠️ Compatible API | ⚠️ Compatible API | ❌ | ❌ | ❌ |
-| Multi-Agent | ✅ Team/Swarm/Sub | ❌ | ❌ | ✅ Multi-Agents | ✅ Sub-Agents | ✅ Agent Mode |
+| Multi-Agent | ✅ Team/Swarm/Sub | ❌ | ✅ Kanban | ✅ Multi-Agents | ✅ Sub-Agents | ✅ Agent Mode |
 | Full Browser Control¹ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Security Sandbox | ✅ 8-layer | ❌ | ❌ | ⚠️ Enterprise | ✅ OS-level | N/A |
-| MCP Tool Extension | ✅ | ⚠️ 3rd-party | ✅ | ❌ | ✅ | ✅ |
-| CLI Terminal Tools | ✅ aica + 35+ slash cmds | ✅ CLI-first | ⚠️ VS Code only | ❌ | ✅ CLI-only | ❌ |
+| MCP Tool Extension | ✅ | ⚠️ 3rd-party | ✅ | ✅ | ✅ | ✅ |
+| CLI Terminal Tools | ✅ aica + 35+ slash cmds | ✅ CLI-first | ⚠️ VS Code only | ❌ | ✅ CLI-only | ✅ Copilot CLI |
 | Extensible Skill System | ✅ Markdown-driven + 6-level sources | ❌ | ❌ | ✅ Rules | ✅ Hooks | ❌ |
 | Cross-Session Memory | ✅ 3-layer memory + BM25 search | ❌ | ❌ | ✅ Rules | ✅ Memory | ❌ |
 | No Client Install | ✅ | ❌ | ❌ | ⚠️ | ✅ | ❌ |
@@ -177,12 +177,12 @@ Configure `LLM_BASE_URL` and `LLM_API_KEY` in `.env` to switch providers:
 |-----------------|:---:|:---:|:---:|:---:|
 | Command Sandbox | 8-layer checks | ❌ User approval | ❌ User approval | ✅ gVisor/Firecracker |
 | Permission Pipeline | 14-step pipeline | ❌ | Simple confirm | Permission system |
-| Security Tests | 289 items | Not disclosed | Not disclosed | Not disclosed |
+| Security Tests | 300+ items | Not disclosed | Not disclosed | Not disclosed |
 | Sensitive Path Block | ✅ | ❌ | ❌ | ❌ |
 | Dangerous Cmd Block | ✅ | ❌ | ❌ | ✅ Partial |
 | Env Var Whitelist | ✅ | ❌ | ❌ | ❌ |
 
-> **Note:** Comparison based on official documentation (2025 Q2). Please [open an issue](https://github.com/zhikunqingtao/zhikuncode/issues) if any inaccuracy is found. Cursor 2.0+ and GitHub Copilot Agent Mode are relatively new features still evolving rapidly.
+> **Note:** Comparison based on official documentation (2026 Q2). Please [open an issue](https://github.com/zhikunqingtao/zhikuncode/issues) if any inaccuracy is found. Cursor 2.0+ and GitHub Copilot Agent Mode are relatively new features still evolving rapidly.
 
 ---
 
@@ -289,7 +289,7 @@ The following paths require user confirmation even in bypass mode:
 
 ### Security Testing
 
-- **289 security tests** covering all security paths
+- **300+ security tests** covering all security paths
 - Includes command injection, path traversal, permission bypass, and other attack scenarios
 - The full security test suite runs on every code change
 
@@ -298,8 +298,8 @@ The following paths require user confirmation even in bypass mode:
 Full test report: [ZhikunCode Core Functionality Test Report](ZhikunCode核心功能测试报告.md)
 
 - **110 test cases** — 100% pass rate
-- **280+ automated tests** — all passing (Vitest + Pytest + Playwright + JUnit 5)
-- **Feature completeness** — 100% coverage of benchmark features
+- **1100+ automated tests** — all passing (JUnit 5 + Vitest + Pytest + Playwright)
+- **Feature completeness** — 100% coverage of v1.0 planned features
 
 ---
 
@@ -385,7 +385,7 @@ ZhikunCode features a three-layer memory architecture that lets the AI assistant
 
 ### Memory Categories
 
-Based on cognitive psychology models, memories are automatically classified into four types:
+Based on cognitive psychology models (a design-level conceptual taxonomy; the implementation distinguishes memories via file paths and metadata tags), memories are automatically classified into four types:
 
 | Category | Description | Example |
 |----------|-------------|----------|
