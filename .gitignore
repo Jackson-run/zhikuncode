@@ -68,12 +68,5 @@ zhikun.local.md
 .service-pids
 
 # Internal docs (not for public)
-docs/开源发布行动清单.md
-docs/社交媒体发布文案.md
-docs/竞品应答手册.md
-docs/ZhikuCode项目全面技术审查报告.md
-docs/ZhikunCode开源推广文章.md
-docs/ZhikunCode技术评估报告.md
-docs/ZhikunCode核心功能测试报告_*.md
-docs/开源前待办任务清单.md
+docs/local/
 docs/.DS_Store
