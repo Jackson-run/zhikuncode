@@ -10,6 +10,7 @@
     <a href="#-quick-start">Quick Start</a> ·
     <a href="#-key-features">Key Features</a> ·
     <a href="#-demo">Demo</a> ·
+    <a href="#-cli-tools">CLI Tools</a> ·
     <a href="#-comparison">Comparison</a> ·
     <a href="../README.md">中文</a>
   </p>
@@ -161,6 +162,7 @@ Configure `LLM_BASE_URL` and `LLM_API_KEY` in `.env` to switch providers:
 | Full Browser Control¹ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Security Sandbox | ✅ 8-layer | ❌ | ❌ | ⚠️ Enterprise | ✅ OS-level | N/A |
 | MCP Tool Extension | ✅ | ⚠️ 3rd-party | ✅ | ❌ | ✅ | ✅ |
+| CLI Terminal Tools | ✅ aica + 35+ slash cmds | ✅ CLI-first | ⚠️ VS Code only | ❌ | ✅ CLI-only | ❌ |
 | No Client Install | ✅ | ❌ | ❌ | ⚠️ | ✅ | ❌ |
 
 > ¹ **Full Browser Control**: After deployment, any device's browser (including mobile) can fully control the entire coding workflow — permission approval, plan negotiation, task management. This is different from Cline/Cursor's "AI controlling a browser for automated testing".
@@ -294,6 +296,70 @@ Full test report: [ZhikunCode Core Functionality Test Report](ZhikunCode核心�
 - **110 test cases** — 100% pass rate
 - **280+ automated tests** — all passing (Vitest + Pytest + Playwright + JUnit 5)
 - **Feature completeness** — 100% coverage of benchmark features
+
+---
+
+## 💻 CLI Tools
+
+Beyond the Web UI, ZhikunCode provides full command-line capabilities for three scenarios:
+
+### Python CLI (aica) — Terminal AI Coding
+
+`aica` is ZhikunCode's command-line client, designed as a first-class UNIX pipe citizen:
+
+```bash
+# Install
+cd python-service
+pip install -e ".[cli]"
+
+# Basic usage
+aica "refactor this function"
+
+# Pipe input — compose like grep/sed
+cat src/main.py | aica "review this code"
+
+# Structured output + jq processing
+aica -f json "list all API endpoints" | jq '.result'
+
+# Streaming output
+aica -f stream-json "refactor this module"
+
+# Continue last conversation
+aica --continue "fix the bug we just discussed"
+```
+
+**Key features:**
+
+| Feature | Description |
+|---------|-------------|
+| Three output formats | `text` (terminal Markdown rendering) / `json` (structured) / `stream-json` (SSE streaming) |
+| Pipe support | Auto-reads stdin, seamlessly composable with shell pipes |
+| Permission modes | `--permission-mode dont_ask/bypass/default` to control security policy |
+| Session management | `--continue` resumes last session, `--resume <id>` restores a specific session |
+| Model selection | `--model` to specify model, `--effort` to control reasoning depth |
+| Tool control | `--allowed-tools` / `--disallowed-tools` whitelist/blocklist |
+| Exit codes | 0=success, 2=argument error, 3=connection error, 4=auth error, 130=Ctrl+C |
+
+> `aica` connects to the ZhikunCode backend via HTTP/SSE, sharing the same Agent engine, toolset, and security architecture. Ideal for CI/CD integration and scripting automation.
+
+### 35+ Slash Commands — Web UI Quick Actions
+
+Type `/` or press `Ctrl+K` in the Web UI to open the command palette with fuzzy search and keyboard navigation:
+
+| Category | Commands | Description |
+|----------|----------|-------------|
+| **Core** | `/help` `/clear` `/exit` | Help, clear conversation, exit |
+| **Model** | `/model` | List/switch LLM models |
+| **Diagnostics** | `/doctor` | 9-item system diagnostic (Java/LLM/Git/JVM/Python/Disk) |
+| **Compression** | `/compact` | Manual context compression, accepts instructions (e.g., `/compact focus on API`) |
+| **Git** | `/diff` `/commit` `/review` | Code diff, generate commit messages, code review |
+| **Config** | `/config` `/permissions` | View config, permission mode management |
+| **Session** | `/session` `/resume` | Session info, restore history sessions |
+| **Cost** | `/cost` `/usage` | Token usage, cost statistics |
+| **MCP** | `/mcp-servers` `/mcp-tools` | MCP service management |
+| **Deep Analysis** | `/ultrareview` | AI deep review (architecture + security + performance + concurrency) |
+
+> On mistyped commands, the system automatically suggests similar commands using Levenshtein distance matching.
 
 ---
 
