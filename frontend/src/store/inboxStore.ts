@@ -8,6 +8,7 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { subscribeWithSelector } from 'zustand/middleware';
 import type { InboxMessage } from '@/types';
+import { generateUUID } from '@/utils/uuid';
 
 export interface InboxStoreState {
     messages: InboxMessage[];
@@ -24,7 +25,7 @@ export const useInboxStore = create<InboxStoreState>()(
 
         addInboxMessage: (data) => set(d => {
             d.messages.push({
-                id: crypto.randomUUID(),
+                id: generateUUID(),
                 fromId: data.fromId,
                 content: data.content,
                 timestamp: Date.now(),

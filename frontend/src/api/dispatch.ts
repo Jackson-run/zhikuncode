@@ -21,6 +21,7 @@ import { useSwarmStore } from '@/store/swarmStore';
 import { usePlanStore, type PlanStep } from '@/store/planStore';
 import { useCoordinatorStore } from '@/store/coordinatorStore';
 import { appendStreamDelta } from '@/hooks/useStreamingText';
+import { generateUUID } from '@/utils/uuid';
 
 /** 序列号校验器 — 检测乱序/丢失消息 */
 let lastSeqTs = 0;
@@ -192,7 +193,7 @@ const handlers: Record<string, (data: any) => void> = {
         if (d.reason === 'USER_INTERRUPT') {
             useMessageStore.getState().addMessage({
                 type: 'system',
-                uuid: crypto.randomUUID(),
+                uuid: generateUUID(),
                 timestamp: Date.now(),
                 content: '\u5df2\u4e2d\u65ad AI \u54cd\u5e94',
                 subtype: 'interrupt',
@@ -226,7 +227,7 @@ const handlers: Record<string, (data: any) => void> = {
             // JSX 类型: 创建带 metadata 的 system Message
             useMessageStore.getState().addMessage({
                 type: 'system',
-                uuid: crypto.randomUUID(),
+                uuid: generateUUID(),
                 timestamp: Date.now(),
                 content: '',
                 subtype: 'jsx_result',
@@ -236,7 +237,7 @@ const handlers: Record<string, (data: any) => void> = {
             // TEXT 类型: 保持原有行为
             useMessageStore.getState().addMessage({
                 type: 'system',
-                uuid: crypto.randomUUID(),
+                uuid: generateUUID(),
                 timestamp: Date.now(),
                 content: `/${d.command}: ${d.output ?? ''}`,
                 subtype: 'command_result',
@@ -325,7 +326,7 @@ function handleMessageComplete(data: { usage: Usage; stopReason: string }): void
 function handleError(data: { code: string; message: string; retryable: boolean }): void {
     useMessageStore.getState().addMessage({
         type: 'system',
-        uuid: crypto.randomUUID(),
+        uuid: generateUUID(),
         timestamp: Date.now(),
         content: data.message,
         subtype: 'error',
@@ -345,7 +346,7 @@ function handleCompactComplete(data: {
         // 新格式: 来自 /compact 命令
         useMessageStore.getState().addMessage({
             type: 'system',
-            uuid: crypto.randomUUID(),
+            uuid: generateUUID(),
             timestamp: Date.now(),
             content: data.displayText ?? '',
             subtype: 'compact_result',
@@ -355,7 +356,7 @@ function handleCompactComplete(data: {
         // 旧格式: 来自自动压缩
         useMessageStore.getState().addMessage({
             type: 'system',
-            uuid: crypto.randomUUID(),
+            uuid: generateUUID(),
             timestamp: Date.now(),
             content: `上下文已压缩，节省 ${data.tokensSaved ?? 0} tokens`,
             subtype: 'compact_boundary',

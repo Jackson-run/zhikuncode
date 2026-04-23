@@ -13,6 +13,7 @@ import type {
     DelegationWarning,
     AgentSpawnPayload,
 } from '@/types';
+import { generateUUID } from '@/utils/uuid';
 
 /** 四个阶段的默认定义 */
 const DEFAULT_PHASES: WorkflowPhaseState[] = [
@@ -166,7 +167,7 @@ export const useCoordinatorStore = create<CoordinatorStoreState>()(
 
         addDelegationWarning: (message) => set((state) => {
             state.delegationWarnings.push({
-                id: crypto.randomUUID(),
+                id: generateUUID(),
                 message,
                 timestamp: Date.now(),
                 dismissed: false,

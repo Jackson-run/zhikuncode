@@ -19,6 +19,7 @@ import { sendToServer } from '@/api/stompClient';
 import CommandPalette from './CommandPalette';
 import FileUpload from './FileUpload';
 import { FileAutoComplete } from './FileAutoComplete';
+import { generateUUID } from '@/utils/uuid';
 
 interface PromptInputProps {
     onSubmit: (event: SubmitEvent) => void;
@@ -172,7 +173,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
 
     const handleFiles = useCallback((files: File[]) => {
         const newAttachments: LocalAttachment[] = files.map(f => ({
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             name: f.name,
             size: f.size,
             type: f.type,

@@ -10,6 +10,7 @@ import { sendToServer, isWsConnected, sendSlashCommand } from '@/api/stompClient
 import { waitForSessionRestore, isSessionBound, markSessionBound } from '@/api/dispatch';
 import { SkillDetailModal } from '@/components/skills/SkillDetailModal';
 import type { SubmitEvent, Message, Command } from '@/types';
+import { generateUUID } from '@/utils/uuid';
 
 interface SkillItem {
   name: string;
@@ -70,7 +71,7 @@ function App() {
       } catch (error) {
         console.error('[App] Failed to create session:', error);
         addMessage({
-          uuid: crypto.randomUUID(),
+          uuid: generateUUID(),
           type: 'system',
           content: '连接服务器失败，请检查后端服务是否正常运行。',
           timestamp: Date.now(),
@@ -107,7 +108,7 @@ function App() {
 
     // 4. ★ 在 bind/restore 完成后再添加用户消息到 store（确保不被 clearMessages 清除）
     addMessage({
-      uuid: crypto.randomUUID(),
+      uuid: generateUUID(),
       type: 'user',
       content: [{ type: 'text', text: event.text }],
       timestamp: Date.now(),
@@ -135,7 +136,7 @@ function App() {
 
     // 添加系统消息到 UI
     addMessage({
-      uuid: crypto.randomUUID(),
+      uuid: generateUUID(),
       type: 'system',
       content: `执行命令: /${raw}`,
       timestamp: Date.now(),

@@ -9,6 +9,7 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { subscribeWithSelector } from 'zustand/middleware';
+import { generateUUID } from '@/utils/uuid';
 
 export interface PlanStep {
     id: string;
@@ -90,7 +91,7 @@ export const usePlanStore = create<PlanStoreState>()(
         }),
         saveSnapshot: () => set(d => {
             d.history.push({
-                id: crypto.randomUUID(),
+                id: generateUUID(),
                 planName: d.planName,
                 steps: JSON.parse(JSON.stringify(d.steps)),
                 createdAt: Date.now(),

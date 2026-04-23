@@ -14,6 +14,7 @@ import type {
     WorkerProgressPayload,
     PermissionBubblePayload,
 } from '@/types';
+import { generateUUID } from '@/utils/uuid';
 
 export interface SwarmStoreState {
     /** 活跃 Swarm 实例 (swarmId → SwarmInfo) */
@@ -106,7 +107,7 @@ export const useSwarmStore = create<SwarmStoreState>()(
 
             // Add log entry for phase changes
             state.logs.push({
-                id: crypto.randomUUID(),
+                id: generateUUID(),
                 timestamp: Date.now(),
                 type: 'message',
                 content: `Swarm ${data.swarmId} → ${data.phase} (${data.activeWorkers}/${data.totalWorkers} workers)`,
@@ -134,7 +135,7 @@ export const useSwarmStore = create<SwarmStoreState>()(
             // Add log for status transitions
             if (data.status === 'WORKING') {
                 state.logs.push({
-                    id: crypto.randomUUID(),
+                    id: generateUUID(),
                     timestamp: Date.now(),
                     type: 'worker_start',
                     workerId: data.workerId,
@@ -142,7 +143,7 @@ export const useSwarmStore = create<SwarmStoreState>()(
                 });
             } else if (data.status === 'IDLE') {
                 state.logs.push({
-                    id: crypto.randomUUID(),
+                    id: generateUUID(),
                     timestamp: Date.now(),
                     type: 'worker_complete',
                     workerId: data.workerId,
@@ -150,7 +151,7 @@ export const useSwarmStore = create<SwarmStoreState>()(
                 });
             } else if (data.status === 'TERMINATED') {
                 state.logs.push({
-                    id: crypto.randomUUID(),
+                    id: generateUUID(),
                     timestamp: Date.now(),
                     type: 'worker_error',
                     workerId: data.workerId,
@@ -170,7 +171,7 @@ export const useSwarmStore = create<SwarmStoreState>()(
             });
 
             state.logs.push({
-                id: crypto.randomUUID(),
+                id: generateUUID(),
                 timestamp: Date.now(),
                 type: 'permission_bubble',
                 workerId: data.workerId,
@@ -187,7 +188,7 @@ export const useSwarmStore = create<SwarmStoreState>()(
         addLogEntry: (entry) => set((state) => {
             state.logs.push({
                 ...entry,
-                id: crypto.randomUUID(),
+                id: generateUUID(),
                 timestamp: Date.now(),
             });
             if (state.logs.length > 200) {

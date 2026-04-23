@@ -9,6 +9,7 @@ import { immer } from 'zustand/middleware/immer';
 import { subscribeWithSelector } from 'zustand/middleware';
 import type { Message, ToolResult, ToolCallState, Usage } from '@/types';
 import { streamingStore, flushStreamingBuffer } from '@/hooks/useStreamingText';
+import { generateUUID } from '@/utils/uuid';
 
 export interface TokenBudgetState {
     pct: number;
@@ -53,7 +54,7 @@ export const useMessageStore = create<MessageStoreState>()(
         appendStreamDelta: (delta) => set(d => {
             // 首次收到 stream_delta 时，创建占位 assistant 消息
             if (!d.streamingMessageId) {
-                const msgId = crypto.randomUUID();
+                const msgId = generateUUID();
                 d.streamingMessageId = msgId;
                 d.messages.push({
                     uuid: msgId,
@@ -67,7 +68,7 @@ export const useMessageStore = create<MessageStoreState>()(
         appendThinkingDelta: (delta) => set(d => {
             // 首次收到 thinking_delta 时，也创建占位 assistant 消息
             if (!d.streamingMessageId) {
-                const msgId = crypto.randomUUID();
+                const msgId = generateUUID();
                 d.streamingMessageId = msgId;
                 d.messages.push({
                     uuid: msgId,
