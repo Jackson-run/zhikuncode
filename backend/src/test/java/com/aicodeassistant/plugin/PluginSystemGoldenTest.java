@@ -1,15 +1,21 @@
 package com.aicodeassistant.plugin;
 
+import static org.mockito.Mockito.*;
 import com.aicodeassistant.command.Command;
 import com.aicodeassistant.command.CommandContext;
+import com.aicodeassistant.command.CommandRegistry;
 import com.aicodeassistant.command.CommandResult;
 import com.aicodeassistant.command.CommandType;
+import com.aicodeassistant.hook.HookRegistry;
+import com.aicodeassistant.mcp.McpClientManager;
 import com.aicodeassistant.mcp.McpServerConfig;
 import com.aicodeassistant.tool.Tool;
 import com.aicodeassistant.tool.ToolInput;
+import com.aicodeassistant.tool.ToolRegistry;
 import com.aicodeassistant.tool.ToolResult;
 import com.aicodeassistant.tool.ToolUseContext;
 import org.junit.jupiter.api.*;
+import org.springframework.core.env.Environment;
 
 import java.util.*;
 
@@ -19,6 +25,25 @@ import static org.junit.jupiter.api.Assertions.*;
  * 插件系统黄金测试
  */
 class PluginSystemGoldenTest {
+
+    /** 测试辅助: 创建配置好的 mock Environment */
+    private static Environment mockEnvironment() {
+        Environment env = mock(Environment.class);
+        when(env.getProperty("plugin.max-jar-size", Long.class, 50 * 1024 * 1024L))
+                .thenReturn(50 * 1024 * 1024L);
+        return env;
+    }
+
+    /** 测试辅助: 创建带完整依赖的 PluginManager */
+    private static PluginManager createPluginManager(PluginLoader loader) {
+        return new PluginManager(
+                loader,
+                mock(CommandRegistry.class),
+                mock(ToolRegistry.class),
+                mock(HookRegistry.class),
+                mock(McpClientManager.class)
+        );
+    }
 
     // ==================== §4.6.1 PluginManifest ====================
 
@@ -163,7 +188,7 @@ class PluginSystemGoldenTest {
         @Test
         @DisplayName("API 兼容检查 — 兼容")
         void apiCompatible() {
-            PluginLoader loader = new PluginLoader();
+            PluginLoader loader = new PluginLoader(mockEnvironment());
             PluginExtension ext = createMinimalPlugin("test", "1.0.0");
             assertTrue(loader.isApiCompatible(ext));
         }
@@ -171,7 +196,7 @@ class PluginSystemGoldenTest {
         @Test
         @DisplayName("API 兼容检查 — 不兼容（minApiVersion 过高）")
         void apiIncompatibleMin() {
-            PluginLoader loader = new PluginLoader();
+            PluginLoader loader = new PluginLoader(mockEnvironment());
             PluginExtension ext = new PluginExtension() {
                 @Override public String name() { return "future-plugin"; }
                 @Override public String version() { return "1.0.0"; }
@@ -183,7 +208,7 @@ class PluginSystemGoldenTest {
         @Test
         @DisplayName("loadAllPlugins — 无 SPI 注册时返回空")
         void loadAllPluginsEmpty() {
-            PluginLoader loader = new PluginLoader();
+            PluginLoader loader = new PluginLoader(mockEnvironment());
             PluginLoadResult result = loader.loadAllPlugins();
             assertNotNull(result);
             // 可能有 SPI 注册，也可能没有，不做严格断言
@@ -200,7 +225,7 @@ class PluginSystemGoldenTest {
 
         @BeforeEach
         void setUp() {
-            manager = new PluginManager(new PluginLoader());
+            manager = createPluginManager(new PluginLoader(mockEnvironment()));
         }
 
         @Test
@@ -453,7 +478,7 @@ class PluginSystemGoldenTest {
             };
 
             // 手动注册并测试
-            PluginManager manager = new PluginManager(new PluginLoader());
+            PluginManager manager = createPluginManager(new PluginLoader(mockEnvironment()));
             manager.initializePlugins(); // 初始化
 
             // 直接测试 hook 逻辑

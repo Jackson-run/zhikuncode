@@ -2,6 +2,9 @@ package com.aicodeassistant.plugin;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.EnumerablePropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -28,6 +31,21 @@ public class PluginLoader {
 
     /** 宿主插件 API 版本 */
     public static final String PLUGIN_API_VERSION = "1.0.0";
+
+    /** JAR 文件大小限制（字节）— 默认 50MB */
+    private static final long DEFAULT_MAX_JAR_SIZE = 50 * 1024 * 1024L;
+    private final long maxJarSizeBytes;
+    private final Environment environment;
+
+    public PluginLoader(Environment environment) {
+        this.environment = environment;
+        this.maxJarSizeBytes = environment.getProperty(
+                "plugin.max-jar-size", Long.class, DEFAULT_MAX_JAR_SIZE);
+    }
+
+    public long getMaxJarSizeBytes() {
+        return maxJarSizeBytes;
+    }
 
     /** 插件目录 */
     private static final String PLUGINS_DIR = ".zhikun/plugins";
@@ -79,7 +97,18 @@ public class PluginLoader {
 
                 // 创建上下文并加载
                 PluginContext ctx = createContext(ext.name());
-                ext.onLoad(ctx);
+                try {
+                    java.util.concurrent.CompletableFuture.runAsync(
+                            () -> ext.onLoad(ctx),
+                            java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor()
+                    ).orTimeout(10, java.util.concurrent.TimeUnit.SECONDS).join();
+                } catch (java.util.concurrent.CompletionException e) {
+                    if (e.getCause() instanceof java.util.concurrent.TimeoutException) {
+                        log.warn("Plugin '{}' onLoad timed out (>10s), skipping", ext.name());
+                        throw new RuntimeException("Plugin onLoad timeout: " + ext.name());
+                    }
+                    throw e;
+                }
 
                 LoadedPlugin plugin = LoadedPlugin.builtin(ext.name(), ext);
                 if (ext.isEnabledByDefault()) {
@@ -129,6 +158,10 @@ public class PluginLoader {
                                 List<LoadedPlugin> enabled,
                                 List<LoadedPlugin> disabled,
                                 List<PluginError> errors) {
+        if (!validateJar(jarPath)) {
+            log.warn("Skipping invalid JAR: {}", jarPath.getFileName());
+            return;
+        }
         String jarName = jarPath.getFileName().toString();
         try {
             URL jarUrl = jarPath.toUri().toURL();
@@ -150,7 +183,18 @@ public class PluginLoader {
                 }
 
                 PluginContext ctx = createContext(ext.name());
-                ext.onLoad(ctx);
+                try {
+                    java.util.concurrent.CompletableFuture.runAsync(
+                            () -> ext.onLoad(ctx),
+                            java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor()
+                    ).orTimeout(10, java.util.concurrent.TimeUnit.SECONDS).join();
+                } catch (java.util.concurrent.CompletionException e) {
+                    if (e.getCause() instanceof java.util.concurrent.TimeoutException) {
+                        log.warn("Plugin '{}' onLoad timed out (>10s), skipping", ext.name());
+                        throw new RuntimeException("Plugin onLoad timeout: " + ext.name());
+                    }
+                    throw e;
+                }
 
                 LoadedPlugin plugin = LoadedPlugin.local(
                         ext.name(), jarPath.toString(), ext, ext.isEnabledByDefault());
@@ -195,10 +239,55 @@ public class PluginLoader {
     }
 
     /**
+     * 校验 JAR 文件。
+     */
+    private boolean validateJar(Path jarPath) {
+        try {
+            long fileSize = java.nio.file.Files.size(jarPath);
+            if (fileSize > maxJarSizeBytes) {
+                log.warn("JAR {} exceeds max size: {}MB > {}MB",
+                        jarPath.getFileName(), fileSize / 1024 / 1024,
+                        maxJarSizeBytes / 1024 / 1024);
+                return false;
+            }
+        } catch (java.io.IOException e) {
+            log.error("Cannot read JAR file {}: {}", jarPath.getFileName(), e.getMessage());
+            return false;
+        }
+        try (java.util.jar.JarFile jarFile = new java.util.jar.JarFile(jarPath.toFile())) {
+            java.util.jar.Manifest manifest = jarFile.getManifest();
+            var spiEntry = jarFile.getEntry(
+                    "META-INF/services/com.aicodeassistant.plugin.PluginExtension");
+            if (spiEntry == null) {
+                log.warn("JAR {} missing SPI registration file", jarPath.getFileName());
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("Invalid JAR file {}: {}", jarPath.getFileName(), e.getMessage());
+            return false;
+        }
+    }
+
+    /**
      * 创建插件上下文。
      */
     private PluginContext createContext(String pluginName) {
-        return new DefaultPluginContext(pluginName);
+        String prefix = "plugins." + pluginName + ".";
+        Map<String, String> config = new java.util.HashMap<>();
+        if (environment instanceof ConfigurableEnvironment ce) {
+            ce.getPropertySources().forEach(ps -> {
+                if (ps instanceof EnumerablePropertySource<?> eps) {
+                    for (String key : eps.getPropertyNames()) {
+                        if (key.startsWith(prefix)) {
+                            String shortKey = key.substring(prefix.length());
+                            config.put(shortKey, environment.getProperty(key));
+                        }
+                    }
+                }
+            });
+        }
+        return new DefaultPluginContext(pluginName, config);
     }
 
     /**
@@ -207,17 +296,21 @@ public class PluginLoader {
     private static class DefaultPluginContext implements PluginContext {
         private final String pluginName;
         private final Logger logger;
+        private final Map<String, String> config;
 
-        DefaultPluginContext(String pluginName) {
+        DefaultPluginContext(String pluginName, Map<String, String> config) {
             this.pluginName = pluginName;
             this.logger = LoggerFactory.getLogger("plugin." + pluginName);
+            this.config = config != null ? config : Map.of();
         }
 
         @Override
         public Logger getLogger() { return logger; }
 
         @Override
-        public Optional<String> getConfig(String key) { return Optional.empty(); }
+        public Optional<String> getConfig(String key) {
+            return Optional.ofNullable(config.get(key));
+        }
 
         @Override
         public Path getDataDirectory() {

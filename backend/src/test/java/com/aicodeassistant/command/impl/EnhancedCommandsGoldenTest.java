@@ -1,6 +1,8 @@
 package com.aicodeassistant.command.impl;
 
 import com.aicodeassistant.command.*;
+import com.aicodeassistant.plugin.PluginManager;
+import com.aicodeassistant.plugin.ReloadPluginsCommand;
 import com.aicodeassistant.model.Usage;
 import com.aicodeassistant.session.SessionData;
 import com.aicodeassistant.session.SessionManager;
@@ -64,9 +66,9 @@ class EnhancedCommandsGoldenTest {
                 config.fastCommand(), config.effortCommand(), config.outputStyleCommand(),
                 config.themeCommand(), config.colorCommand(),
                 config.vimCommand(), config.keybindingsCommand(),
-                // Extension (7)
+                // Extension (7): 6 from ExtensionCommands @Bean + 1 from ReloadPluginsCommand @Component
                 ext.mcpCommand(), ext.hooksCommand(), ext.skillsCommand(),
-                ext.pluginCommand(), ext.reloadPluginsCommand(), ext.agentCommand(),
+                ext.pluginCommand(), new ReloadPluginsCommand(mock(PluginManager.class)), ext.agentCommand(),
                 ext.tasksCommand(),
                 // Environment (9)
                 env.addDirCommand(), env.ideCommand(), env.chromeCommand(),

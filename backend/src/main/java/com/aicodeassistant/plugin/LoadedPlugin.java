@@ -6,6 +6,7 @@ import com.aicodeassistant.tool.Tool;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 已加载插件 — 运行时插件实例。
@@ -38,6 +39,17 @@ public record LoadedPlugin(
 ) {
 
     /**
+     * List<McpServerConfig> → Map<String, McpServerConfig> 转换。
+     * 以 McpServerConfig.name() 为 key，重名时后者覆盖前者。
+     */
+    private static Map<String, McpServerConfig> toMcpMap(List<McpServerConfig> list) {
+        if (list == null || list.isEmpty()) return Map.of();
+        return list.stream()
+                .collect(Collectors.toMap(
+                        McpServerConfig::name, c -> c, (a, b) -> b));
+    }
+
+    /**
      * 创建内置插件。
      */
     public static LoadedPlugin builtin(String name, PluginExtension extension) {
@@ -48,7 +60,7 @@ public record LoadedPlugin(
                 extension.getCommands(),
                 extension.getTools(),
                 extension.getHooks(),
-                Map.of()
+                toMcpMap(extension.getMcpServers())
         );
     }
 
@@ -63,7 +75,7 @@ public record LoadedPlugin(
                 extension.getCommands(),
                 extension.getTools(),
                 extension.getHooks(),
-                Map.of()
+                toMcpMap(extension.getMcpServers())
         );
     }
 

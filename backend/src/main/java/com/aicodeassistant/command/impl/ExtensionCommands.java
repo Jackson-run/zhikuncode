@@ -96,19 +96,8 @@ public class ExtensionCommands {
         };
     }
 
-    @Bean
-    Command reloadPluginsCommand() {
-        return new Command() {
-            @Override public String getName() { return "reload-plugins"; }
-            @Override public String getDescription() { return "重新加载所有插件"; }
-            @Override public CommandType getType() { return CommandType.LOCAL; }
-            @Override
-            public CommandResult execute(String args, CommandContext context) {
-                // P1: 重新扫描并加载插件
-                return CommandResult.text("Reloading all plugins... Done. (P1 placeholder)");
-            }
-        };
-    }
+    // reloadPluginsCommand 已迁移至独立的 ReloadPluginsCommand @Component，
+    // 避免与 PluginManager 的循环依赖。
 
     @Bean
     Command agentCommand() {

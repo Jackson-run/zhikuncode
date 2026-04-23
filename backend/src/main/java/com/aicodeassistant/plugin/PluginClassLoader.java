@@ -61,8 +61,11 @@ public class PluginClassLoader extends URLClassLoader {
                 if (resolve) resolveClass(c);
                 return c;
             } catch (ClassNotFoundException e) {
-                // Fallback — 允许访问剩余宿主类
-                return getParent().loadClass(name);
+                // 仅允许框架类的 fallback — 保持沙箱有效
+                if (isAllowedFrameworkPackage(name)) {
+                    return getParent().loadClass(name);
+                }
+                throw e; // 真正隔离：未授权类不可访问
             }
         }
     }
@@ -75,5 +78,12 @@ public class PluginClassLoader extends URLClassLoader {
                 || name.startsWith(TOOL_API_PACKAGE)
                 || name.startsWith(COMMAND_API_PACKAGE)
                 || name.startsWith(MCP_API_PACKAGE);
+    }
+
+    private boolean isAllowedFrameworkPackage(String name) {
+        return name.startsWith("org.springframework.")
+                || name.startsWith("org.slf4j.")
+                || name.startsWith("com.fasterxml.jackson.")
+                || name.startsWith("jakarta.");
     }
 }

@@ -7,10 +7,14 @@ import java.util.function.Function;
  * <p>
  * 支持的钩子事件类型 :
  * <ul>
- *     <li>PreToolUse  — 工具调用前拦截（可修改输入/拒绝调用）</li>
- *     <li>PostToolUse — 工具调用后处理（可修改输出）</li>
- *     <li>Notification — 通知事件处理</li>
- *     <li>Stop        — 查询循环结束后处理</li>
+ *     <li>PreToolUse        — 工具调用前拦截（可修改输入/拒绝调用）</li>
+ *     <li>PostToolUse       — 工具调用后处理（可修改输出）</li>
+ *     <li>Notification      — 通知事件处理</li>
+ *     <li>Stop              — 查询循环结束后处理</li>
+ *     <li>UserPromptSubmit  — 用户提交消息前拦截</li>
+ *     <li>SessionStart      — 会话开始事件</li>
+ *     <li>SessionEnd        — 会话结束事件</li>
+ *     <li>TaskCompleted     — 子代理任务完成事件</li>
  * </ul>
  *
  * @param eventType 事件类型
@@ -32,7 +36,11 @@ public record HookHandler(
         PRE_TOOL_USE,
         POST_TOOL_USE,
         NOTIFICATION,
-        STOP
+        STOP,
+        USER_PROMPT_SUBMIT,
+        SESSION_START,
+        SESSION_END,
+        TASK_COMPLETED
     }
 
     /**
