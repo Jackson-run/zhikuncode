@@ -555,15 +555,17 @@ aica --continue "fix the bug we just discussed"
 |------|------|
 | 三种输出格式 | `text`（终端 Markdown 渲染）/ `json`（结构化）/ `stream-json`（SSE 流式） |
 | 管道支持 | 自动读取 stdin，与 shell 管道无缝组合 |
-| 权限模式 | `--permission-mode dont_ask/bypass/default` 控制安全策略 |
+| 权限模式 | `--permission-mode dont_ask/bypass/default` 控制安全策略（CLI 默认 `dont_ask`） |
 | 会话管理 | `--continue` 继续上次会话，`--resume <id>` 恢复指定会话 |
 | 模型选择 | `--model` 指定模型，`--effort` 控制推理深度 |
 | 工具控制 | `--allowed-tools` / `--disallowed-tools` 白名单/黑名单 |
-| 退出码 | 0=成功，2=参数错误，3=连接错误，4=认证错误，130=Ctrl+C 中断 |
+| 退出码 | 0=成功，1=通用错误，2=参数错误，3=连接错误，4=认证错误，130=Ctrl+C 中断 |
 
 > `aica` 通过 HTTP/SSE 连接 ZhikunCode 后端，共享同一套 Agent 引擎、工具集和安全架构。适合 CI/CD 集成和脚本自动化场景。
 
 ### 35+ 斜杠命令 — Web UI 快捷操作
+
+> 以下斜杠命令在 Web UI 中使用，`aica` CLI 通过自然语言 prompt 访问后端 Agent 引擎实现相同能力。
 
 在 Web UI 中输入 `/` 或按 `Ctrl+K` 打开命令面板，支持模糊搜索和键盘导航：
 

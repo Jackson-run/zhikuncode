@@ -556,15 +556,17 @@ aica --continue "fix the bug we just discussed"
 |---------|-------------|
 | Three output formats | `text` (terminal Markdown rendering) / `json` (structured) / `stream-json` (SSE streaming) |
 | Pipe support | Auto-reads stdin, seamlessly composable with shell pipes |
-| Permission modes | `--permission-mode dont_ask/bypass/default` to control security policy |
+| Permission modes | `--permission-mode dont_ask/bypass/default` to control security policy (CLI defaults to `dont_ask`) |
 | Session management | `--continue` resumes last session, `--resume <id>` restores a specific session |
 | Model selection | `--model` to specify model, `--effort` to control reasoning depth |
 | Tool control | `--allowed-tools` / `--disallowed-tools` whitelist/blocklist |
-| Exit codes | 0=success, 2=argument error, 3=connection error, 4=auth error, 130=Ctrl+C |
+| Exit codes | 0=success, 1=generic error, 2=argument error, 3=connection error, 4=auth error, 130=Ctrl+C |
 
 > `aica` connects to the ZhikunCode backend via HTTP/SSE, sharing the same Agent engine, toolset, and security architecture. Ideal for CI/CD integration and scripting automation.
 
 ### 35+ Slash Commands — Web UI Quick Actions
+
+> The following slash commands are available in the **Web UI**. The `aica` CLI accesses the same backend Agent engine through natural language prompts.
 
 Type `/` or press `Ctrl+K` in the Web UI to open the command palette with fuzzy search and keyboard navigation:
 
