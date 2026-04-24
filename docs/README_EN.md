@@ -40,7 +40,7 @@
 |---|---|---|
 | 🌐 | **Full Browser-Based Control** | Deploy once, then manage everything from any device's browser — permission approvals, plan discussions, task management. Works on mobile. No client installation needed |
 | 🤖 | **Multi-Agent Collaboration** | Three collaboration modes: Team (fixed roles) / Swarm (dynamic negotiation) / SubAgent (parent-child delegation). Complex tasks are automatically distributed |
-| 🔒 | **Defense-in-Depth Security** | 8-layer Bash sandbox + 14-step permission pipeline + 300+ security tests. Every command must pass security checks before execution |
+| 🔒 | **Defense-in-Depth Security** | 8-layer Bash sandbox + 14-step permission pipeline + 289 security tests. Every command must pass security checks before execution |
 | 🇨🇳 | **Native Chinese LLM Support** | Qwen / DeepSeek / Moonshot work out of the box with direct connections from mainland China — no VPN required |
 | 🐳 | **One-Command Docker Deployment** | `docker compose up -d` — one command to start. Data stays local, fully private |
 
@@ -94,7 +94,7 @@ Once started, open **http://localhost:8080** in your browser.
 
 ### Option 2: Local Development
 
-**Prerequisites:** JDK 21, Node.js 20+, Python 3.11+
+**Prerequisites:** JDK 21, Node.js 20+, Python 3.11~3.12 (does not support 3.13+)
 
 ```bash
 git clone https://github.com/zhikunqingtao/zhikuncode.git
@@ -137,11 +137,27 @@ cd frontend && npm install && npm run dev
 
 ### Supported LLM Providers
 
-Configure `LLM_BASE_URL` and `LLM_API_KEY` in `.env` to switch providers:
+ZhikunCode supports **multi-Provider simultaneous configuration** (recommended) and single-Provider mode. In multi-Provider mode, you can freely switch models from the frontend:
+
+**Option A: Multi-Provider Configuration (Recommended)**
+
+Configure independent API Keys for each provider in `.env`, and switch freely from the frontend:
+
+```bash
+# DashScope (Qwen series)
+LLM_PROVIDER_DASHSCOPE_API_KEY=your-dashscope-key
+
+# DeepSeek
+LLM_PROVIDER_DEEPSEEK_API_KEY=your-deepseek-key
+```
+
+**Option B: Single-Provider Configuration (Backward Compatible)**
+
+If no multi-Provider keys are configured, the system automatically falls back to single-Provider mode. Configure `LLM_BASE_URL` and `LLM_API_KEY` in `.env`:
 
 | Provider | Base URL | Recommended Model | Notes |
 |----------|----------|-------------------|-------|
-| **Qwen / DashScope** | `https://dashscope.aliyuncs.com/compatible-mode/v1` | qwen3.6-plus | **Default**, direct connection in China |
+| **Qwen / DashScope** | `https://dashscope.aliyuncs.com/compatible-mode/v1` | qwen3.6-max-preview | **Default**, direct connection in China |
 | **DeepSeek** | `https://api.deepseek.com/v1` | deepseek-chat | Direct connection in China |
 | **Moonshot (Kimi)** | `https://api.moonshot.cn/v1` | moonshot-v1-auto | Direct connection in China |
 | **OpenAI** | `https://api.openai.com/v1` | gpt-4o | Requires international network access |
@@ -158,14 +174,14 @@ Configure `LLM_BASE_URL` and `LLM_API_KEY` in `.env` to switch providers:
 | Feature | ZhikunCode | Aider | Cline | Cursor | Claude Code | Copilot |
 |---------|:---:|:---:|:---:|:---:|:---:|:---:|
 | Open Source & Free | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Web UI | ✅ Full-featured | ⚠️ Streamlit | ❌ | ⚠️ Web ver. | ✅ | ⚠️ GitHub.com |
+| Web UI | ✅ Full-featured | ⚠️ Experimental browser UI | ❌ | ⚠️ Web ver. | ✅ | ⚠️ GitHub.com |
 | Docker Self-hosted | ✅ Full web service | ⚠️ CLI container | ❌ | ⚠️ Enterprise | ❌ | ❌ |
 | Chinese LLM Support | ✅ Native | ⚠️ Compatible API | ⚠️ Compatible API | ❌ | ❌ | ❌ |
-| Multi-Agent | ✅ Team/Swarm/Sub | ❌ | ✅ Kanban | ✅ Multi-Agents | ✅ Sub-Agents | ✅ Agent Mode |
+| Multi-Agent | ✅ Team/Swarm/Sub | ❌ | ✅ Kanban + CLI parallel | ✅ Multi-Agents | ✅ Sub-Agents | ✅ /fleet + Agent Mode |
 | Full Browser Control¹ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Security Sandbox | ✅ 8-layer | ❌ | ❌ | ⚠️ Enterprise | ✅ OS-level | N/A |
+| Security Sandbox | ✅ 8-layer | ❌ | ❌ | ⚠️ Enterprise | ✅ OS-level | ⚠️ GitHub permission policies |
 | MCP Tool Extension | ✅ | ⚠️ 3rd-party | ✅ | ✅ | ✅ | ✅ |
-| CLI Terminal Tools | ✅ aica + 35+ slash cmds | ✅ CLI-first | ⚠️ VS Code only | ❌ | ✅ CLI-only | ✅ Copilot CLI |
+| CLI Terminal Tools | ✅ aica + 35+ slash cmds | ✅ CLI-first | ✅ CLI 2.0 | ✅ Cursor CLI | ✅ CLI-only | ✅ Copilot CLI |
 | Extensible Skill System | ✅ Markdown-driven + 6-level sources | ❌ | ❌ | ✅ Rules | ✅ Hooks | ❌ |
 | Plugin System | ✅ Java SPI plugins + sandbox isolation + hot reload | ❌ | ❌ | ✅ Plugins | ✅ Skills/Hooks | ✅ Plugins |
 | Cross-Session Memory | ✅ 3-layer memory + BM25 search | ❌ | ❌ | ✅ Rules | ✅ Memory | ❌ |
@@ -179,12 +195,14 @@ Configure `LLM_BASE_URL` and `LLM_API_KEY` in `.env` to switch providers:
 |-----------------|:---:|:---:|:---:|:---:|
 | Command Sandbox | 8-layer checks | ❌ User approval | ❌ User approval | ✅ gVisor/Firecracker |
 | Permission Pipeline | 14-step pipeline | ❌ | Simple confirm | Permission system |
-| Security Tests | 300+ items | Not disclosed | Not disclosed | Not disclosed |
+| Security Tests | 289 items | Not disclosed | Not disclosed | Not disclosed |
 | Sensitive Path Block | ✅ | ❌ | ❌ | ❌ |
 | Dangerous Cmd Block | ✅ | ❌ | ❌ | ✅ Partial |
 | Env Var Whitelist | ✅ | ❌ | ❌ | ❌ |
 
-> **Note:** Comparison based on official documentation (2026 Q2). Please [open an issue](https://github.com/zhikunqingtao/zhikuncode/issues) if any inaccuracy is found. Cursor 2.0+ and GitHub Copilot Agent Mode are relatively new features still evolving rapidly.
+> **Note:** Comparison based on official documentation (as of April 2026). AI coding tools iterate rapidly — please [open an issue](https://github.com/zhikunqingtao/zhikuncode/issues) if any inaccuracy is found. Cline CLI 2.0, Cursor 2.0+, Claude Code Desktop, and GitHub Copilot /fleet are all evolving rapidly.
+>
+> **Latest Updates (April 2026):** Claude Code Desktop App released (supports local + cloud hybrid execution); Cursor 3.1 introduced Canvas feature (interactive dashboard + custom UI components); latest versions: Aider v0.86+, Cline v1.0.35+, Cursor 3.1+, Claude Code 2.1.119+, GitHub Copilot CLI 1.0.35+.
 
 ---
 
@@ -212,8 +230,8 @@ ZhikunCode uses a three-tier architecture: the Java backend handles core orchest
 
 | Layer | Tech Stack | Responsibilities |
 |-------|-----------|-----------------|
-| **Backend** | Java 21, Spring Boot 3.4, WebSocket, SQLite | Core orchestration engine, LLM API routing, Agent management, tool execution (47 built-in tools), permission pipeline, session persistence |
-| **Frontend** | React 18, TypeScript, Vite, TailwindCSS | Conversational UI, file browser, settings panel, real-time streaming output, Agent collaboration visualization |
+| **Backend** | Java 21, Spring Boot 3.4.x, WebSocket, SQLite | Core orchestration engine, LLM API routing, Agent management, tool execution (41 built-in tools + MCP dynamic extensions), permission pipeline, session persistence |
+| **Frontend** | React 18, TypeScript 5.6, Vite 5, TailwindCSS, Monaco Editor, xterm.js, Zustand | Conversational UI, code editor, built-in terminal, file browser, settings panel, real-time streaming output, Agent collaboration visualization |
 | **Python Service** | FastAPI, Uvicorn, Python 3.11+ | Code analysis, AST parsing, MCP tool bridging |
 
 ### Docker Deployment Architecture
@@ -291,7 +309,7 @@ The following paths require user confirmation even in bypass mode:
 
 ### Security Testing
 
-- **300+ security tests** covering all security paths
+- **289 security tests** covering all security paths
 - Includes command injection, path traversal, permission bypass, and other attack scenarios
 - The full security test suite runs on every code change
 
@@ -613,11 +631,13 @@ From your browser, you can manage the entire AI coding workflow:
 
 ### Real-Time Communication
 
-The frontend and backend maintain a persistent WebSocket connection:
+The frontend and backend maintain a real-time connection via **STOMP over SockJS** (auto-negotiates WebSocket → xhr-streaming → xhr-polling fallback):
 
 - **Streaming output** — LLM responses stream token by token, no waiting for completion
 - **Permission bubbling** — Sub-Agent permission requests are pushed to the browser in real time
 - **State synchronization** — Agent state changes are reflected in the UI instantly
+- **Heartbeat keep-alive** — Bidirectional 10s heartbeat detection, auto-reconnect on disconnect (exponential backoff 1s→10s)
+- **Message guarantees** — 128KB message size limit, 1MB send buffer, 30s send timeout
 
 ---
 
@@ -742,21 +762,23 @@ Register new MCP tools in `configuration/mcp/mcp_capability_registry.json`:
 
 ## 🛠️ Built-in Tools
 
-ZhikunCode ships with 47 built-in tools covering the full development lifecycle:
+ZhikunCode ships with 41 built-in tools + MCP dynamic extensions, covering the full development lifecycle:
 
 | Category | Tools | Description |
 |----------|-------|-------------|
-| **File Operations** | FileRead, FileWrite, FileEdit | Read, write, and edit files |
-| **Code Search** | GrepTool, GlobTool, ToolSearch | Regex search, file glob matching, tool search |
-| **Command Execution** | BashTool | Execute shell commands inside the security sandbox |
+| **File Operations** | FileRead, FileWrite, FileEdit, NotebookEdit | Read, write, and edit files, including Jupyter Notebook support |
+| **Code Search** | GrepTool, GlobTool, ToolSearch, LspTool, SnipTool | Regex search, file glob matching, tool search, LSP language service, code snippets |
+| **Command Execution** | BashTool, PowerShellTool, REPLTool | Shell sandbox execution, Windows PowerShell, interactive REPL sessions |
 | **Git Operations** | GitTool, Worktree | Git command execution, Worktree management |
 | **Web Tools** | WebSearch, WebFetch, WebBrowser | Web search, page fetching, browser automation |
 | **Agent Collaboration** | AgentTool | Create and manage sub-Agents |
-| **Task Management** | Task create/list/assign | SharedTaskList-based task collaboration |
+| **Task Management** | Task create/get/list/update/stop/output | SharedTaskList task collaboration (6 tools) |
+| **Interaction** | AskUserQuestion, Brief, Sleep, TodoWrite | User questions, briefings, wait, todo lists |
 | **Scheduled Tasks** | CronCreate, CronList, CronDelete | Cron job management |
 | **Plan Mode** | EnterPlanMode, ExitPlanMode, VerifyPlan | Plan-then-execute workflow |
-| **MCP Extensions** | MCP tool adapters | Connect to external MCP services |
-| **Monitoring** | MonitorTool, CtxInspect | System monitoring, context inspection |
+| **Configuration** | ConfigTool, SendMessage, SyntheticOutput | Config management, message sending, synthetic output |
+| **Monitoring** | MonitorTool, CtxInspect, TerminalCapture | System monitoring, context inspection, terminal output capture |
+| **MCP Extensions** | MCP tool adapters | Connect to external MCP services (dynamically registered) |
 
 ---
 
@@ -766,12 +788,31 @@ ZhikunCode ships with 47 built-in tools covering the full development lifecycle:
 
 Environment variables are managed via the `.env` file. Copy `.env.example` and modify as needed:
 
+**Multi-Provider Configuration (Recommended):**
+
+| Variable | Required | Default | Description |
+|----------|:---:|---------|-------------|
+| `LLM_PROVIDER_DASHSCOPE_API_KEY` | — | — | Qwen/DashScope API Key |
+| `LLM_PROVIDER_DEEPSEEK_API_KEY` | — | — | DeepSeek API Key |
+| `LLM_DEFAULT_MODEL` | — | qwen3.6-max-preview | Default model (used when no explicit selection) |
+
+> In multi-Provider mode, configure at least one Provider's API Key. The frontend supports free switching between configured Providers.
+
+**Single-Provider Configuration (Backward Compatible):**
+
 | Variable | Required | Default | Description |
 |----------|:---:|---------|-------------|
 | `LLM_API_KEY` | ✅ | — | API Key for your LLM provider |
 | `LLM_BASE_URL` | — | DashScope | LLM API endpoint |
-| `LLM_DEFAULT_MODEL` | — | qwen3.6-plus | Default model |
+| `LLM_DEFAULT_MODEL` | — | qwen3.6-max-preview | Default model |
 | `LLM_MODELS` | — | Qwen series | Available models (comma-separated) |
+
+> If all `LLM_PROVIDER_*` keys are empty, the system automatically falls back to single-Provider mode.
+
+**General Configuration:**
+
+| Variable | Required | Default | Description |
+|----------|:---:|---------|-------------|
 | `ZHIKUN_PORT` | — | 8080 | Host port for Docker mapping |
 | `SPRING_PROFILES_ACTIVE` | — | production | Spring profile |
 | `JAVA_OPTS` | — | -Xms256m -Xmx1024m | JVM options |
@@ -780,18 +821,26 @@ Environment variables are managed via the `.env` file. Copy `.env.example` and m
 | `LOG_DIR` | — | /app/log | Container log directory |
 | `MCP_REGISTRY_PATH` | — | Auto-configured | MCP capability registry file path |
 
+**Advanced Configuration:**
+
+| Variable | Required | Default | Description |
+|----------|:---:|---------|-------------|
+| `ZHIKUN_COORDINATOR_MODE` | — | 0 | Feature flag, enable coordinator mode (0=off, 1=on) |
+| `LLM_PROVIDER_DASHSCOPE_MODELS` | — | qwen3.6-max-preview,qwen3.6-plus | DashScope available models (comma-separated) |
+| `LLM_PROVIDER_DEEPSEEK_MODELS` | — | deepseek-v4-pro,deepseek-v4-flash | DeepSeek available models (comma-separated) |
+
 ### Docker Resource Limits
 
 Default resource configuration (adjustable in `docker-compose.yml`):
 
 | Setting | Default |
 |---------|---------|
-| Memory limit | 2GB |
-| Memory reservation | 512MB |
+| Memory limit | 4GB |
+| Memory reservation | 1GB |
 | Health check interval | 30s |
 | Startup grace period | 60s |
 
-> **Note:** The initial image build requires more memory (~3-4GB). If the build fails, increase Docker Desktop's memory allocation to 4GB or more in its settings.
+> **Note:** The initial image build requires more memory (Maven compilation + npm build). If the build fails, increase Docker Desktop's memory allocation to 6GB or more in its settings. The runtime container memory limit is 4GB (adjustable in docker-compose.yml).
 
 ---
 
@@ -899,7 +948,7 @@ Quick steps:
 
 We recommend starting with Issues labeled `good first issue`.
 
-**Development environment:** JDK 21, Node.js 20+, Python 3.11+, Maven 3.9+
+**Development environment:** JDK 21, Node.js 20+, Python 3.11~3.12, Maven 3.9+
 
 </details>
 
@@ -946,7 +995,7 @@ docker inspect --format='json .State.Health' zhikuncode | python3 -m json.tool
 **Common startup failure causes:**
 - `LLM_API_KEY is not configured` — API Key not set, check your .env file
 - `Unable to access jarfile` — Incomplete image build, try `docker compose up --build`
-- Out of memory — Default requires 2GB, adjust `deploy.resources.limits.memory` in docker-compose.yml
+- Out of memory — Default requires 4GB, adjust `deploy.resources.limits.memory` in docker-compose.yml
 
 **View runtime logs:**
 ```bash
