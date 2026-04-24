@@ -70,7 +70,7 @@ public class McpServerConnection {
             // ★ ERR-3 修复: 为 SSE transport 注入 disconnectCallback
             if (transport instanceof McpSseTransport sseTransport) {
                 sseTransport.setDisconnectCallback(() -> {
-                    log.warn("SSE disconnect callback triggered for '{}'", config.name());
+                    log.debug("SSE disconnect callback triggered for '{}'", config.name());
                     this.status = McpConnectionStatus.FAILED;
                 });
             }
@@ -82,7 +82,7 @@ public class McpServerConnection {
             performProtocolHandshake();
 
         } catch (Exception e) {
-            log.error("Failed to connect MCP server '{}': {}", config.name(), e.getMessage());
+            log.debug("Failed to connect MCP server '{}': {}", config.name(), e.getMessage());
             this.status = McpConnectionStatus.FAILED;
         }
     }

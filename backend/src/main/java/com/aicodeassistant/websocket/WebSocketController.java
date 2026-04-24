@@ -87,6 +87,9 @@ public class WebSocketController implements PermissionNotifier {
     /** 会话级查询运行守卫 — 防止同一会话并发执行多个 QueryEngine */
     private final ConcurrentHashMap<String, AtomicBoolean> sessionQueryRunning = new ConcurrentHashMap<>();
 
+    /** 会话级模型选择 — 记录每个会话当前使用的模型 */
+    private final ConcurrentHashMap<String, String> sessionModels = new ConcurrentHashMap<>();
+
     public WebSocketController(SimpMessagingTemplate messaging,
                                 WebSocketSessionManager wsSessionManager,
                                 QueryEngine queryEngine,
@@ -172,8 +175,8 @@ public class WebSocketController implements PermissionNotifier {
         message.put("ts", System.currentTimeMillis());
         message.putAll(fields);
 
-        if ("stream_delta".equals(type)) {
-            log.debug("push stream_delta to principal={}, len={}", principal, fields.getOrDefault("delta", "").toString().length());
+        if ("stream_delta".equals(type) || "thinking_delta".equals(type)) {
+            log.trace("push {} to principal={}, len={}", type, principal, fields.getOrDefault("delta", "").toString().length());
         } else {
             log.info("push({}) to principal={}, sessionId={}", type, principal, sessionId);
         }
@@ -465,7 +468,8 @@ public class WebSocketController implements PermissionNotifier {
         // 2. 构建系统提示
         SystemPromptConfig promptConfig = SystemPromptConfig.defaults()
                 .withSessionId(sessionId);
-        String model = providerRegistry.getDefaultModel();
+        String model = sessionModels.getOrDefault(sessionId, providerRegistry.getDefaultModel());
+        log.info("executeQuery: sessionId={}, model={}", sessionId, model);
         String systemPrompt = systemPromptBuilder.buildEffectiveSystemPrompt(
                 promptConfig, tools, model, Path.of(System.getProperty("user.dir")));
 
@@ -741,7 +745,16 @@ public class WebSocketController implements PermissionNotifier {
         // Validate model exists via ModelRegistry capabilities
         try {
             modelRegistry.getCapabilities(payload.model());
+            // 存储模型选择到内存
+            sessionModels.put(sessionId, payload.model());
+            // 持久化到 DB
+            try {
+                sessionManager.updateSessionModel(sessionId, payload.model());
+            } catch (Exception dbEx) {
+                log.warn("Failed to persist model change to DB: sessionId={}, model={}", sessionId, payload.model(), dbEx);
+            }
             push(sessionId, "model_changed", Map.of("model", payload.model()));
+            log.info("Model stored for session: sessionId={}, model={}", sessionId, payload.model());
         } catch (Exception e) {
             push(sessionId, "error", Map.of(
                     "code", "INVALID_MODEL",
@@ -939,6 +952,18 @@ public class WebSocketController implements PermissionNotifier {
         if (sessionId != null && principal != null) {
             wsSessionManager.bindSession(principal.getName(), sessionId);
             log.info("WS bind-session: principal={}, sessionId={}", principal.getName(), sessionId);
+
+            // ── 从 DB 加载并初始化 session 模型 ──
+            try {
+                sessionManager.loadSession(sessionId).ifPresent(data -> {
+                    if (data.model() != null && !data.model().isEmpty()) {
+                        sessionModels.put(sessionId, data.model());
+                        log.info("Restored session model from DB: sessionId={}, model={}", sessionId, data.model());
+                    }
+                });
+            } catch (Exception e) {
+                log.warn("Failed to restore session model: sessionId={}", sessionId, e);
+            }
 
             // ── 新增: 推送 session_restored ──
             try {

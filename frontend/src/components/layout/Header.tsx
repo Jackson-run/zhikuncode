@@ -5,7 +5,7 @@
  * 包含: Logo, SessionTitle, ModelSelector, CostIndicator, SettingsButton
  */
 
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Settings, Plus, Menu, Bot, DollarSign, Sun, Moon, Sparkles } from 'lucide-react';
 import { useSessionStore } from '@/store/sessionStore';
 import { useCostStore } from '@/store/costStore';
@@ -22,6 +22,30 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
     const { sessionCost, totalCost } = useCostStore();
     const { openDialog } = useDialogStore();
     const { theme, setTheme } = useConfigStore();
+
+    // 动态加载可用模型列表
+    const [availableModels, setAvailableModels] = useState<Array<{ id: string; displayName: string }>>([
+        { id: 'qwen3.6-max-preview', displayName: 'Qwen 3.6 Max Preview' },
+        { id: 'deepseek-v4-pro', displayName: 'DeepSeek V4 Pro' },
+    ]);
+
+    useEffect(() => {
+        fetch('/api/models')
+            .then(res => res.json())
+            .then(data => {
+                if (data.models && data.models.length > 0) {
+                    setAvailableModels(data.models.map((m: any) => ({
+                        id: m.id,
+                        displayName: m.displayName || m.id,
+                    })));
+                    // 如果当前未选择模型，设为后端默认模型
+                    if (!model && data.defaultModel) {
+                        setModel(data.defaultModel);
+                    }
+                }
+            })
+            .catch(err => console.warn('Failed to fetch models:', err));
+    }, []);
 
     // 判断当前是否为深色模式（含 system 跟随）
     const isDark = theme.mode === 'dark' || 
@@ -84,10 +108,9 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
                         bg-[var(--bg-primary)] text-[var(--text-primary)]
                         focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                    <option value="qwen3.6-plus">Qwen 3.6 Plus</option>
-                    <option value="qwen-max">Qwen Max</option>
-                    <option value="qwen-turbo">Qwen Turbo</option>
-                    <option value="gpt-4">GPT-4</option>
+                    {availableModels.map(m => (
+                        <option key={m.id} value={m.id}>{m.displayName}</option>
+                    ))}
                 </select>
             </div>
 

@@ -118,11 +118,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             StompHeaderAccessor accessor = MessageHeaderAccessor
                     .getAccessor(message, StompHeaderAccessor.class);
             if (accessor != null) {
-                log.info("[DIAG] clientInbound: cmd={}, dest={}, user={}, sessionId={}",
-                    accessor.getCommand(),
-                    accessor.getDestination(),
-                    accessor.getUser() != null ? accessor.getUser().getName() : "null",
-                    accessor.getSessionId());
+                if (accessor.getCommand() != null) {
+                    log.info("[DIAG] clientInbound: cmd={}, dest={}, user={}, sessionId={}",
+                        accessor.getCommand(),
+                        accessor.getDestination(),
+                        accessor.getUser() != null ? accessor.getUser().getName() : "null",
+                        accessor.getSessionId());
+                } else {
+                    log.trace("[DIAG] clientInbound: heartbeat, sessionId={}", accessor.getSessionId());
+                }
             }
             return message;
         }

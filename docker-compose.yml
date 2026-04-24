@@ -20,13 +20,16 @@ services:
       - "${ZHIKUN_PORT:-8080}:8080"
     environment:
       # ---- Required ----
-      - LLM_API_KEY=${LLM_API_KEY:?Please set LLM_API_KEY in .env file}
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-production}
       - "JAVA_OPTS=${JAVA_OPTS:--Xms256m -Xmx1024m --enable-preview}"
-      # ---- Optional (LLM) ----
+      # ---- Multi-Provider LLM (Recommended) ----
+      - LLM_PROVIDER_DASHSCOPE_API_KEY=${LLM_PROVIDER_DASHSCOPE_API_KEY:-}
+      - LLM_PROVIDER_DEEPSEEK_API_KEY=${LLM_PROVIDER_DEEPSEEK_API_KEY:-}
+      # ---- Legacy Single-Provider (Backward Compatible) ----
+      - LLM_API_KEY=${LLM_API_KEY:-}
       - LLM_BASE_URL=${LLM_BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
-      - LLM_DEFAULT_MODEL=${LLM_DEFAULT_MODEL:-qwen3.6-plus}
-      - LLM_MODELS=${LLM_MODELS:-qwen3.6-plus,qwen-max,qwen-plus,qwen-turbo,qwen-coder-plus}
+      - LLM_DEFAULT_MODEL=${LLM_DEFAULT_MODEL:-qwen3.6-max-preview}
+      - LLM_MODELS=${LLM_MODELS:-}
       # ---- Optional (Docker Advanced) — has Dockerfile defaults, override if needed ----
       # Private network access: allows Docker bridge network IPs to bypass auth
       # - ALLOW_PRIVATE_NETWORK=${ALLOW_PRIVATE_NETWORK:-true}

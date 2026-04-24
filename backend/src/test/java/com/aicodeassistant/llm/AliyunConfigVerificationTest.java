@@ -24,9 +24,10 @@ class AliyunConfigVerificationTest {
 
     private OpenAiCompatibleProvider createProvider(List<String> models) {
         return new OpenAiCompatibleProvider(
+                "test-provider",
                 objectMapper,
                 DEFAULT_HTTP_PROPS,
-                new ApiKeyRotationManager(List.of(), "sk-test-key"),
+                new ApiKeyRotationManager("sk-test-key"),
                 "sk-test-key",
                 "https://dashscope.aliyuncs.com/compatible-mode/v1",
                 models.get(0),
@@ -67,7 +68,7 @@ class AliyunConfigVerificationTest {
         OpenAiCompatibleProvider provider = createProvider(
                 List.of("qwen3.6-plus"));
 
-        assertEquals("openai-compatible", provider.getProviderName());
+        assertEquals("test-provider", provider.getProviderName());
         assertEquals("qwen3.6-plus", provider.getDefaultModel());
         assertTrue(provider.getSupportedModels().contains("qwen3.6-plus"));
     }

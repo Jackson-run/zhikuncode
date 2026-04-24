@@ -10,9 +10,7 @@ import okhttp3.*;
 import okio.BufferedSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Service;
+
 
 import java.io.IOException;
 import java.time.Duration;
@@ -35,14 +33,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * 【架构裁决 #1】使用 StreamChatCallback 回调模式，方法阻塞直到流结束。
  *
  */
-@Service
-@ConditionalOnProperty(name = "llm.provider", havingValue = "openai", matchIfMissing = true)
 public class OpenAiCompatibleProvider implements LlmProvider {
 
     private static final Logger log = LoggerFactory.getLogger(OpenAiCompatibleProvider.class);
     private static final MediaType JSON_MEDIA = MediaType.parse("application/json");
 
     private final OkHttpClient httpClient;
+    private final String providerName;
     private final String apiKey;
     private final String baseUrl;
     private final ObjectMapper objectMapper;
@@ -61,18 +58,22 @@ public class OpenAiCompatibleProvider implements LlmProvider {
             // DeepSeek 模型
             Map.entry("deepseek-chat", new ModelCapabilities("deepseek-chat", "DeepSeek Chat", 8192, 64000, true, true, false, true, 0.00027, 0.0011)),
             Map.entry("deepseek-reasoner", new ModelCapabilities("deepseek-reasoner", "DeepSeek Reasoner", 8192, 64000, true, true, false, false, 0.00055, 0.0022)),
+            Map.entry("deepseek-v4-pro", new ModelCapabilities("deepseek-v4-pro", "DeepSeek V4 Pro", 384000, 1000000, true, true, false, true, 0.001, 0.004)),
+            Map.entry("deepseek-v4-flash", new ModelCapabilities("deepseek-v4-flash", "DeepSeek V4 Flash", 384000, 1000000, true, true, false, true, 0.0005, 0.002)),
             // 阿里云百炼 - 通义千问模型（qwen-max/plus/turbo/3.6-plus 已迁移至 ModelRegistry.BUILTIN_MODELS）
             Map.entry("qwen-coder-plus", new ModelCapabilities("qwen-coder-plus", "通义千问 Coder Plus", 8192, 131072, true, false, false, true, 0.0007, 0.002))
     );
 
     public OpenAiCompatibleProvider(
+            String providerName,
             ObjectMapper objectMapper,
             LlmHttpProperties httpProperties,
             ApiKeyRotationManager keyRotationManager,
-            @Value("${llm.openai.api-key:}") String apiKey,
-            @Value("${llm.openai.base-url:https://api.openai.com/v1}") String baseUrl,
-            @Value("${llm.openai.default-model:gpt-4o}") String defaultModel,
-            @Value("${llm.openai.models:gpt-4o,gpt-4o-mini,gpt-4-turbo}") List<String> supportedModels) {
+            String apiKey,
+            String baseUrl,
+            String defaultModel,
+            List<String> supportedModels) {
+        this.providerName = providerName;
         this.objectMapper = objectMapper;
         this.apiKey = apiKey;
         this.keyRotationManager = keyRotationManager;
@@ -95,7 +96,7 @@ public class OpenAiCompatibleProvider implements LlmProvider {
     }
 
     @Override
-    public String getProviderName() { return "openai-compatible"; }
+    public String getProviderName() { return providerName; }
 
     @Override
     public List<String> getSupportedModels() { return supportedModels; }
@@ -137,7 +138,8 @@ public class OpenAiCompatibleProvider implements LlmProvider {
             ThinkingConfig thinkingConfig,
             StreamChatCallback callback) {
 
-        ObjectNode requestBody = buildOpenAiRequest(model, messages, systemPrompt, tools, maxTokens);
+        ObjectNode requestBody = buildOpenAiRequest(model, messages, systemPrompt, tools, maxTokens, thinkingConfig);
+        log.info("[DIAG] streamChat: model={}, messagesSize={}, baseUrl={}", model, messages.size(), baseUrl);
 
         // P1-12: 使用 Key 轮换管理器获取 API Key
         String effectiveApiKey = keyRotationManager.getKeyCount() > 0
@@ -151,6 +153,7 @@ public class OpenAiCompatibleProvider implements LlmProvider {
                 .build();
 
         String callId = "openai-" + System.nanoTime();
+        log.info("[DIAG] streamChat: 发送 HTTP 请求, callId={}, url={}", callId, baseUrl + "/chat/completions");
         Call call = httpClient.newCall(request);
         activeCalls.put(callId, call);
 
@@ -158,6 +161,7 @@ public class OpenAiCompatibleProvider implements LlmProvider {
         Map<Integer, ToolCallAccumulator> toolCallAccumulators = new HashMap<>();
 
         try (Response response = call.execute()) {
+            log.info("[DIAG] streamChat: HTTP 响应 code={}, callId={}", response.code(), callId);
             if (!response.isSuccessful()) {
                 handleErrorResponse(response, callback);
                 return;
@@ -222,13 +226,38 @@ public class OpenAiCompatibleProvider implements LlmProvider {
             List<Map<String, Object>> messages,
             String systemPrompt,
             List<Map<String, Object>> tools,
-            int maxTokens) {
+            int maxTokens,
+            ThinkingConfig thinkingConfig) {
 
         ObjectNode root = buildBaseRequest(model, messages, systemPrompt, tools, maxTokens);
         root.put("stream", true);
         ObjectNode streamOptions = root.putObject("stream_options");
         streamOptions.put("include_usage", true);
+
+        // DeepSeek 思考模式参数
+        // DeepSeek V4 系列默认启用思考模式，必须始终发送 thinking 参数以保持一致性
+        if (isDeepSeekModel(model)) {
+            ObjectNode thinking = root.putObject("thinking");
+            thinking.put("type", "enabled");
+            // 根据 ThinkingConfig 选择 reasoning_effort
+            if (thinkingConfig != null && thinkingConfig.requiresThinkingSupport()) {
+                int budget = switch (thinkingConfig) {
+                    case ThinkingConfig.Adaptive a -> a.computedBudget() != null ? a.computedBudget() : ThinkingConfig.DEFAULT_BUDGET_TOKENS;
+                    case ThinkingConfig.Enabled e -> e.budgetTokens() != null ? e.budgetTokens() : ThinkingConfig.DEFAULT_BUDGET_TOKENS;
+                    default -> ThinkingConfig.DEFAULT_BUDGET_TOKENS;
+                };
+                root.put("reasoning_effort", budget >= 30000 ? "max" : "high");
+            } else {
+                root.put("reasoning_effort", "high");
+            }
+        }
+
         return root;
+    }
+
+    /** 判断是否为 DeepSeek 系列模型 */
+    private static boolean isDeepSeekModel(String model) {
+        return model != null && model.startsWith("deepseek-");
     }
 
     /**
@@ -286,12 +315,20 @@ public class OpenAiCompatibleProvider implements LlmProvider {
                     msgNode.put("role", "assistant");
                     // 提取文本内容
                     StringBuilder textContent = new StringBuilder();
+                    StringBuilder thinkingContent = new StringBuilder();
                     for (Object block : blocks) {
-                        if (block instanceof Map<?,?> b && "text".equals(b.get("type"))) {
-                            Object text = b.get("text");
-                            if (text != null && !text.toString().isEmpty()) {
-                                if (!textContent.isEmpty()) textContent.append("\n");
-                                textContent.append(text);
+                        if (block instanceof Map<?,?> b) {
+                            if ("text".equals(b.get("type"))) {
+                                Object text = b.get("text");
+                                if (text != null && !text.toString().isEmpty()) {
+                                    if (!textContent.isEmpty()) textContent.append("\n");
+                                    textContent.append(text);
+                                }
+                            } else if ("thinking".equals(b.get("type"))) {
+                                Object thinking = b.get("thinking");
+                                if (thinking != null && !thinking.toString().isEmpty()) {
+                                    thinkingContent.append(thinking);
+                                }
                             }
                         }
                     }
@@ -299,6 +336,10 @@ public class OpenAiCompatibleProvider implements LlmProvider {
                         msgNode.put("content", textContent.toString());
                     } else {
                         msgNode.putNull("content");
+                    }
+                    // DeepSeek: reasoning_content 必须回传
+                    if (!thinkingContent.isEmpty()) {
+                        msgNode.put("reasoning_content", thinkingContent.toString());
                     }
                     // 构建 tool_calls 数组
                     ArrayNode toolCalls = msgNode.putArray("tool_calls");
@@ -323,18 +364,30 @@ public class OpenAiCompatibleProvider implements LlmProvider {
 
                 // 普通 assistant/user 消息: 提取文本内容为字符串
                 StringBuilder textContent = new StringBuilder();
+                StringBuilder thinkingContent = new StringBuilder();
                 for (Object block : blocks) {
-                    if (block instanceof Map<?,?> b && "text".equals(b.get("type"))) {
-                        Object text = b.get("text");
-                        if (text != null && !text.toString().isEmpty()) {
-                            if (!textContent.isEmpty()) textContent.append("\n");
-                            textContent.append(text);
+                    if (block instanceof Map<?,?> b) {
+                        if ("text".equals(b.get("type"))) {
+                            Object text = b.get("text");
+                            if (text != null && !text.toString().isEmpty()) {
+                                if (!textContent.isEmpty()) textContent.append("\n");
+                                textContent.append(text);
+                            }
+                        } else if ("thinking".equals(b.get("type")) && "assistant".equals(role)) {
+                            Object thinking = b.get("thinking");
+                            if (thinking != null && !thinking.toString().isEmpty()) {
+                                thinkingContent.append(thinking);
+                            }
                         }
                     }
                 }
                 ObjectNode msgNode = messagesArray.addObject();
                 msgNode.put("role", role != null ? role : "user");
                 msgNode.put("content", textContent.toString());
+                // DeepSeek: reasoning_content 必须回传
+                if ("assistant".equals(role) && !thinkingContent.isEmpty()) {
+                    msgNode.put("reasoning_content", thinkingContent.toString());
+                }
             } else {
                 // 纯字符串消息
                 ObjectNode msgNode = messagesArray.addObject();
@@ -489,6 +542,14 @@ public class OpenAiCompatibleProvider implements LlmProvider {
             String finishReason = normalizeFinishReason(rawFinishReason);
 
             if (delta != null) {
+                // DeepSeek reasoning_content 思考增量
+                if (delta.has("reasoning_content") && !delta.get("reasoning_content").isNull()) {
+                    String thinking = delta.get("reasoning_content").asText();
+                    if (!thinking.isEmpty()) {
+                        callback.onEvent(new LlmStreamEvent.ThinkingDelta(thinking));
+                    }
+                }
+
                 // 文本增量
                 if (delta.has("content") && !delta.get("content").isNull()) {
                     String text = delta.get("content").asText();

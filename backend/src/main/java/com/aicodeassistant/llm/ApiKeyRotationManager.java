@@ -2,8 +2,6 @@ package com.aicodeassistant.llm;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -22,7 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * </ul>
  *
  */
-@Component
 public class ApiKeyRotationManager {
 
     private static final Logger log = LoggerFactory.getLogger(ApiKeyRotationManager.class);
@@ -35,25 +32,22 @@ public class ApiKeyRotationManager {
     private final ConcurrentHashMap<String, Instant> cooldownUntil = new ConcurrentHashMap<>();
 
     /**
-     * 构造器 — 从配置读取 API Key 列表。
-     * <p>
-     * 支持单 Key 和多 Key:
-     * - 单 Key: `llm.openai.api-key=sk-xxx`
-     * - 多 Key: `llm.api-keys=sk-xxx1,sk-xxx2,sk-xxx3`
-     * 如果 api-keys 未配置，回退到单个 api-key。
+     * 构造器 — 接受 API Key 列表。
      */
-    public ApiKeyRotationManager(
-            @Value("${llm.api-keys:}") List<String> apiKeys,
-            @Value("${llm.openai.api-key:}") String singleApiKey) {
+    public ApiKeyRotationManager(List<String> apiKeys) {
         // 过滤空值
-        List<String> keys = apiKeys.stream()
+        this.apiKeys = apiKeys.stream()
                 .filter(k -> k != null && !k.isBlank())
                 .toList();
-        if (keys.isEmpty() && singleApiKey != null && !singleApiKey.isBlank()) {
-            keys = List.of(singleApiKey);
-        }
-        this.apiKeys = keys;
         log.info("ApiKeyRotationManager initialized with {} key(s)", this.apiKeys.size());
+    }
+
+    /**
+     * 便捷构造器 — 单个 API Key。
+     */
+    public ApiKeyRotationManager(String singleApiKey) {
+        this(singleApiKey != null && !singleApiKey.isBlank()
+                ? List.of(singleApiKey) : List.of());
     }
 
     /**

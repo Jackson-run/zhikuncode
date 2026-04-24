@@ -27,22 +27,25 @@ public class ModelController {
         this.modelRegistry = modelRegistry;
     }
 
-    /** 列出所有可用模型及其能力信息 */
+    /** 列出所有已配置的可用模型及其能力信息 */
     @GetMapping
     public ResponseEntity<ModelListResponse> listModels() {
-        // 使用 ModelRegistry.listAllModels() — 包含内置 + 自定义 + Provider 注册的完整模型列表
-        List<ModelInfo> models = modelRegistry.listAllModels().stream()
-                .map(mc -> new ModelInfo(
-                        mc.modelId(),
-                        mc.displayName(),
-                        mc.maxOutputTokens(),
-                        mc.contextWindow(),
-                        mc.supportsStreaming(),
-                        mc.supportsThinking(),
-                        mc.supportsImages(),
-                        mc.supportsToolUse(),
-                        mc.costPer1kInput(),
-                        mc.costPer1kOutput()))
+        // 优先使用 Provider 注册的模型（实际可用），通过 ModelRegistry 补充能力信息
+        List<ModelInfo> models = providerRegistry.listAvailableModels().stream()
+                .map(modelId -> {
+                    ModelCapabilities mc = modelRegistry.getCapabilities(modelId);
+                    return new ModelInfo(
+                            mc.modelId(),
+                            mc.displayName(),
+                            mc.maxOutputTokens(),
+                            mc.contextWindow(),
+                            mc.supportsStreaming(),
+                            mc.supportsThinking(),
+                            mc.supportsImages(),
+                            mc.supportsToolUse(),
+                            mc.costPer1kInput(),
+                            mc.costPer1kOutput());
+                })
                 .toList();
         return ResponseEntity.ok(new ModelListResponse(
                 models, providerRegistry.getDefaultModel()));

@@ -107,7 +107,7 @@ public class McpSseTransport implements McpTransport {
             @Override
             public void onFailure(EventSource eventSource, Throwable t, Response response) {
                 connected.set(false);
-                log.error("MCP SSE connection failed: {}", t != null ? t.getMessage() : "unknown");
+                log.debug("MCP SSE connection failed: {}", t != null ? t.getMessage() : "unknown");
                 if (!connectFuture.isDone()) {
                     connectFuture.completeExceptionally(
                             t != null ? t : new IOException("SSE connection failed"));

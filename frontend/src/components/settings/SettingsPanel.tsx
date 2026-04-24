@@ -73,11 +73,14 @@ export function SettingsPanel() {
 
 /** 模型选择下拉框 */
 function ModelPicker() {
-  const [model, setModel] = useState('qwen3.6-plus');
+  const [model, setModel] = useState('qwen3.6-max-preview');
   const models = [
+    { id: 'qwen3.6-max-preview', name: 'Qwen 3.6 Max Preview', description: '最强推理' },
     { id: 'qwen3.6-plus', name: 'Qwen 3.6 Plus', description: '均衡性能' },
     { id: 'qwen-max', name: 'Qwen Max', description: '最强推理' },
     { id: 'qwen-turbo', name: 'Qwen Turbo', description: '最快响应' },
+    { id: 'deepseek-v4-pro', name: 'DeepSeek V4 Pro', description: '最强推理' },
+    { id: 'deepseek-v4-flash', name: 'DeepSeek V4 Flash', description: '快速响应' },
   ];
 
   return (

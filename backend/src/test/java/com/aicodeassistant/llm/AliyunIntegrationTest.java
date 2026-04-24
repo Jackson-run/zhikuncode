@@ -35,9 +35,10 @@ class AliyunIntegrationTest {
     @BeforeEach
     void setUp() {
         provider = new OpenAiCompatibleProvider(
+                "dashscope-test",
                 objectMapper,
                 DEFAULT_HTTP_PROPS,
-                new ApiKeyRotationManager(List.of(), ALIYUN_API_KEY),
+                new ApiKeyRotationManager(ALIYUN_API_KEY),
                 ALIYUN_API_KEY,
                 "https://dashscope.aliyuncs.com/compatible-mode/v1",
                 "qwen3.6-plus",
@@ -47,7 +48,7 @@ class AliyunIntegrationTest {
 
     @Test
     void testProviderConfiguration() {
-        assertEquals("openai-compatible", provider.getProviderName());
+        assertEquals("dashscope-test", provider.getProviderName());
         assertEquals("qwen3.6-plus", provider.getDefaultModel());
         assertTrue(provider.getSupportedModels().contains("qwen3.6-plus"));
         assertTrue(provider.getSupportedModels().contains("qwen-max"));

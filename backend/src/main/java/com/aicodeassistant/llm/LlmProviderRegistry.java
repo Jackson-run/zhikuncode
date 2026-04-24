@@ -2,6 +2,7 @@ package com.aicodeassistant.llm;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,7 @@ public class LlmProviderRegistry {
     @Value("${classifier.model:}")
     private String classifierModel;
 
-    @Value("${app.model.default:qwen3.6-plus}")
+    @Value("${app.model.default:qwen3.6-max-preview}")
     private String configuredDefaultModel;
 
     /** 内置别名映射（模型层级别名 → 实际部署模型） */
@@ -37,17 +38,19 @@ public class LlmProviderRegistry {
             // 新别名（推荐）
             Map.entry("light", "qwen-plus"),
             Map.entry("standard", "qwen3.6-plus"),
-            Map.entry("premium", "qwen-max"),
+            Map.entry("premium", "qwen3.6-max-preview"),
             // 旧别名（兼容1个版本后移除）
             Map.entry("haiku", "qwen-plus"),
             Map.entry("sonnet", "qwen3.6-plus"),
-            Map.entry("opus", "qwen-max")
+            Map.entry("opus", "qwen3.6-max-preview")
     );
 
     /**
-     * 构造函数 — 通过 Spring 自动注入所有 LlmProvider 实现，自动注册。
+     * 构造函数 — 通过 Spring 注入 MultiProviderConfiguration 创建的 Provider 列表。
      */
-    public LlmProviderRegistry(List<LlmProvider> providerList, Environment env) {
+    public LlmProviderRegistry(
+            @Qualifier("openAiCompatibleProviders") List<LlmProvider> providerList,
+            Environment env) {
         this.env = env;
         for (LlmProvider provider : providerList) {
             register(provider);

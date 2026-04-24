@@ -45,9 +45,10 @@ class ChatSyncTest {
         }
 
         provider = new OpenAiCompatibleProvider(
+                "mock-test",
                 objectMapper,
                 DEFAULT_HTTP_PROPS,
-                new ApiKeyRotationManager(List.of(), "sk-test-key"),
+                new ApiKeyRotationManager("sk-test-key"),
                 "sk-test-key",
                 baseUrl,
                 "qwen-plus",

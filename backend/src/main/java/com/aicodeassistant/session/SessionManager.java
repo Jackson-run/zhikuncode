@@ -206,6 +206,25 @@ public class SessionManager {
         );
     }
 
+    /**
+     * 更新会话模型。
+     */
+    public void updateSessionModel(String sessionId, String model) {
+        String now = Instant.now().toString();
+        Path dbPath = Path.of(System.getProperty("user.dir")).resolve(".ai-code-assistant/data.db");
+        sqliteConfig.executeWriteVoid(dbPath, () ->
+                jdbcTemplate.update(
+                        "UPDATE sessions SET model = ?, updated_at = ? WHERE id = ?",
+                        model, now, sessionId
+                )
+        );
+        // 同步更新 AppState
+        appStateStore.setState(state ->
+                state.withSession(s -> s.withCurrentModel(model))
+        );
+        log.info("Session model updated: sessionId={}, model={}", sessionId, model);
+    }
+
     // ───── 添加消息 ─────
 
     /**

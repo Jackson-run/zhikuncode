@@ -201,9 +201,13 @@ public class QueryEngine {
         TokenBudgetTracker tokenBudgetTracker = config.tokenBudget() != null
                 ? new TokenBudgetTracker() : null;
 
+        log.info("[DIAG] queryLoop 进入: model={}, messageCount={}, maxTurns={}, aborted={}",
+                config.model(), state.getMessages().size(), config.maxTurns(), aborted.get());
+
         while (!aborted.get()) {
             state.incrementTurnCount();
             int turn = state.getTurnCount();
+            log.info("[DIAG] Turn {} 开始: messageCount={}, model={}", turn, state.getMessages().size(), currentModel[0]);
             handler.onTurnStart(turn);
 
             // ===== Step 1: 压缩级联（统一入口）=====
@@ -240,8 +244,12 @@ public class QueryEngine {
                 }
             }
             LlmProvider provider = providerRegistry.getProvider(effectiveModel);
+            log.info("[DIAG] Turn {} Step3: provider={}, effectiveModel={}, effectiveMaxTokens={}",
+                    turn, provider.getClass().getSimpleName(), effectiveModel, effectiveMaxTokens);
             List<MessageParam> typedMessages = messageNormalizer.normalizeTyped(state.getMessages());
             List<Map<String, Object>> apiMessages = MessageParamConverter.toMaps(typedMessages);
+            log.info("[DIAG] Turn {} Step3: apiMessages.size={}, typedMessages.size={}",
+                    turn, apiMessages.size(), typedMessages.size());
 
             // StreamCollector 持有 session, 支持流式工具启动
             StreamCollector collector = new StreamCollector(
@@ -252,6 +260,7 @@ public class QueryEngine {
             ThinkingConfig resolvedThinking = resolveThinking(
                     config.thinkingConfig(), provider, currentModel[0], handler, state);
 
+            log.info("[DIAG] Turn {} Step3: 开始 API 调用 streamChat...", turn);
             try {
                 apiRetryService.executeWithRetry(() -> {
                     provider.streamChat(
@@ -839,6 +848,7 @@ public class QueryEngine {
         private final ToolUseContext toolUseContext;
         private final ObjectMapper objectMapper;
         private final List<ContentBlock> contentBlocks = new ArrayList<>();
+        private final StringBuilder currentThinking = new StringBuilder();
         private final StringBuilder currentText = new StringBuilder();
         private String currentToolId;
         private String currentToolName;
@@ -862,10 +872,13 @@ public class QueryEngine {
         public void onEvent(LlmStreamEvent event) {
             switch (event) {
                 case LlmStreamEvent.TextDelta delta -> {
+                    // 首次收到文本时，将已累积的 thinking 内容 flush 为 ThinkingBlock
+                    flushThinkingBlock();
                     currentText.append(delta.text());
                     handler.onTextDelta(delta.text());
                 }
                 case LlmStreamEvent.ThinkingDelta delta -> {
+                    currentThinking.append(delta.thinking());
                     handler.onThinkingDelta(delta.thinking());
                 }
                 case LlmStreamEvent.ToolUseStart start -> {
@@ -913,7 +926,15 @@ public class QueryEngine {
             handler.onError(error);
         }
 
+        private void flushThinkingBlock() {
+            if (!currentThinking.isEmpty()) {
+                contentBlocks.add(new ContentBlock.ThinkingBlock(currentThinking.toString()));
+                currentThinking.setLength(0);
+            }
+        }
+
         private void flushTextBlock() {
+            flushThinkingBlock();
             if (!currentText.isEmpty()) {
                 contentBlocks.add(new ContentBlock.TextBlock(currentText.toString()));
                 currentText.setLength(0);

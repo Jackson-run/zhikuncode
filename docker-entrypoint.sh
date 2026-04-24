@@ -16,13 +16,29 @@ mkdir -p /app/data /app/workspace
 # Pre-flight checks
 # ============================================================
 
-# 1. Validate LLM_API_KEY
-if [ -z "$LLM_API_KEY" ] || [ "$LLM_API_KEY" = "your-api-key-here" ]; then
+# 1. Validate LLM configuration (multi-provider or legacy single-provider)
+HAS_PROVIDER_KEY=false
+if [ -n "$LLM_PROVIDER_DASHSCOPE_API_KEY" ] && [ "$LLM_PROVIDER_DASHSCOPE_API_KEY" != "your-dashscope-api-key-here" ]; then
+    HAS_PROVIDER_KEY=true
+fi
+if [ -n "$LLM_PROVIDER_DEEPSEEK_API_KEY" ] && [ "$LLM_PROVIDER_DEEPSEEK_API_KEY" != "your-deepseek-api-key-here" ]; then
+    HAS_PROVIDER_KEY=true
+fi
+HAS_LEGACY_KEY=false
+if [ -n "$LLM_API_KEY" ] && [ "$LLM_API_KEY" != "your-api-key-here" ]; then
+    HAS_LEGACY_KEY=true
+fi
+
+if [ "$HAS_PROVIDER_KEY" = false ] && [ "$HAS_LEGACY_KEY" = false ]; then
     echo "============================================================"
-    echo "  ERROR: LLM_API_KEY is not configured!"
+    echo "  ERROR: No LLM API Key configured!"
     echo ""
-    echo "  Please set LLM_API_KEY in your .env file or pass it via"
-    echo "  docker run -e LLM_API_KEY=your-actual-key"
+    echo "  Option 1 (Recommended): Set provider-specific keys:"
+    echo "    LLM_PROVIDER_DASHSCOPE_API_KEY=your-key"
+    echo "    LLM_PROVIDER_DEEPSEEK_API_KEY=your-key"
+    echo ""
+    echo "  Option 2 (Legacy): Set a single key:"
+    echo "    LLM_API_KEY=your-key"
     echo ""
     echo "  See .env.example for configuration details."
     echo "============================================================"
@@ -30,12 +46,22 @@ if [ -z "$LLM_API_KEY" ] || [ "$LLM_API_KEY" = "your-api-key-here" ]; then
 fi
 
 # 2. Print configuration summary
-MASKED_KEY="${LLM_API_KEY:0:6}****${LLM_API_KEY: -4}"
 echo "============================================================"
 echo "  ZhikunCode — Starting"
 echo "============================================================"
-echo "  LLM API Key:    $MASKED_KEY"
-echo "  LLM Base URL:   ${LLM_BASE_URL:-default (DashScope)}"
+if [ -n "$LLM_PROVIDER_DASHSCOPE_API_KEY" ] && [ "$LLM_PROVIDER_DASHSCOPE_API_KEY" != "your-dashscope-api-key-here" ]; then
+    MASKED="${LLM_PROVIDER_DASHSCOPE_API_KEY:0:6}****${LLM_PROVIDER_DASHSCOPE_API_KEY: -4}"
+    echo "  DashScope Key:  $MASKED"
+fi
+if [ -n "$LLM_PROVIDER_DEEPSEEK_API_KEY" ] && [ "$LLM_PROVIDER_DEEPSEEK_API_KEY" != "your-deepseek-api-key-here" ]; then
+    MASKED="${LLM_PROVIDER_DEEPSEEK_API_KEY:0:6}****${LLM_PROVIDER_DEEPSEEK_API_KEY: -4}"
+    echo "  DeepSeek Key:   $MASKED"
+fi
+if [ "$HAS_LEGACY_KEY" = true ]; then
+    MASKED="${LLM_API_KEY:0:6}****${LLM_API_KEY: -4}"
+    echo "  Legacy API Key: $MASKED"
+    echo "  LLM Base URL:   ${LLM_BASE_URL:-default (DashScope)}"
+fi
 echo "  Default Model:  ${LLM_DEFAULT_MODEL:-default}"
 echo "  Log Directory:  ${LOG_DIR:-/app/log}"
 echo "  Private Network: ${ALLOW_PRIVATE_NETWORK:-false}"

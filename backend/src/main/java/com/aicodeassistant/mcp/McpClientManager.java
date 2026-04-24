@@ -195,7 +195,7 @@ public class McpClientManager implements SmartLifecycle {
             registerToolsFromConnection(conn);
             log.info("MCP server connected: {}", config.name());
         } catch (Exception e) {
-            log.error("Failed to connect MCP server: {}", config.name(), e);
+            log.debug("Failed to connect MCP server: {}", config.name(), e);
             conn.setStatus(McpConnectionStatus.FAILED);
             connections.put(config.name(), conn);
         }
@@ -455,7 +455,7 @@ public class McpClientManager implements SmartLifecycle {
     private void scheduleDelayedReconnect(String serverId, McpServerConnection conn) {
         int attempt = conn.getReconnectAttempts();
         if (attempt >= MAX_RECONNECT_ATTEMPTS) {
-            log.error("MCP server {} exceeded max reconnect attempts ({})",
+            log.warn("MCP server {} exceeded max reconnect attempts ({}), giving up",
                     serverId, MAX_RECONNECT_ATTEMPTS);
             return;
         }
@@ -485,11 +485,11 @@ public class McpClientManager implements SmartLifecycle {
                 broadcastHealthStatus(serverId, McpConnectionStatus.CONNECTED);
             } else {
                 conn.incrementReconnectAttempts();
-                log.warn("Reconnect failed for {} (status={})", serverId, conn.getStatus());
+                log.debug("Reconnect failed for {} (status={})", serverId, conn.getStatus());
             }
         } catch (Exception e) {
             conn.incrementReconnectAttempts();
-            log.warn("Reconnect failed for {}: {}", serverId, e.getMessage());
+            log.debug("Reconnect failed for {}: {}", serverId, e.getMessage());
         } finally {
             reconnectingServers.remove(serverId);
         }

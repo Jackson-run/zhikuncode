@@ -28,6 +28,21 @@ python:
 # 切换提供商只需修改下方 3 个变量（或对应环境变量）
 llm:
   provider: openai
+  # ===== 多 Provider 配置（推荐）=====
+  # 支持同时接入多个 LLM 服务商，前端可自由切换
+  providers:
+    dashscope:
+      api-key: ${LLM_PROVIDER_DASHSCOPE_API_KEY:}
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+      default-model: qwen3.6-max-preview
+      models: ${LLM_PROVIDER_DASHSCOPE_MODELS:qwen3.6-max-preview,qwen3.6-plus}
+    deepseek:
+      api-key: ${LLM_PROVIDER_DEEPSEEK_API_KEY:}
+      base-url: https://api.deepseek.com/v1
+      default-model: deepseek-v4-pro
+      models: ${LLM_PROVIDER_DEEPSEEK_MODELS:deepseek-v4-pro,deepseek-v4-flash}
+  # ===== 单 Provider 配置（向后兼容）=====
+  # 如果 llm.providers 为空，回退到此配置
   openai:
     # API Key — 从环境变量读取，禁止硬编码
     api-key: ${LLM_API_KEY:your-api-key-here}
@@ -40,9 +55,9 @@ llm:
     #   Azure OpenAI: https://{resource}.openai.azure.com/openai/deployments/{deployment}/v1
     base-url: ${LLM_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
     # 默认模型（各提供商模型名不同，请配合 base-url 设置）
-    default-model: ${LLM_DEFAULT_MODEL:qwen3.6-plus}
+    default-model: ${LLM_DEFAULT_MODEL:qwen3.6-max-preview}
     # 支持的模型列表（逗号分隔）
-    models: ${LLM_MODELS:qwen3.6-plus,qwen-max,qwen-plus,qwen-turbo,qwen-coder-plus}
+    models: ${LLM_MODELS:qwen3.6-max-preview,qwen3.6-plus,qwen-max,qwen-plus,qwen-turbo,qwen-coder-plus}
   http:
     pool:
       max-idle-connections: 5
@@ -57,7 +72,7 @@ agent:
   model-aliases:
     light: qwen-plus
     standard: qwen3.6-plus
-    premium: qwen-max
+    premium: qwen3.6-max-preview
 
 # 分类器模型配置（留空则按四级回退: env → 此配置 → lightweight → default）
 classifier:
@@ -94,7 +109,7 @@ mcp:
       type: SSE
       url: https://dashscope.aliyuncs.com/api/v1/mcps/zhipu-websearch/sse
       headers:
-        Authorization: Bearer ${LLM_API_KEY:your-api-key-here}
+        Authorization: Bearer ${LLM_PROVIDER_DASHSCOPE_API_KEY:${LLM_API_KEY:your-api-key-here}}
       scope: USER
 
 # 沙箱配置
@@ -154,9 +169,10 @@ app:
     session-timeout-hours: 24
   model:
     # 默认模型（千问示例）
-    default: qwen3.6-plus
+    default: qwen3.6-max-preview
     # 降级链 — 按性能从高到低
     tier-chain:
+      - qwen3.6-max-preview
       - qwen3.6-plus
       - qwen-plus
       - qwen-turbo

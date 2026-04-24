@@ -62,7 +62,7 @@ export const useConfigStore = create<ConfigStoreState>()(
                 verbose: false,
                 expandedView: false,
                 outputStyle: { availableStyles: [] as OutputStyleDef[], activeStyleName: null as string | null },
-                defaultModel: 'qwen3.6-plus',
+                defaultModel: 'qwen3.6-max-preview',
 
                 setTheme: (update) => set(d => { Object.assign(d.theme, update); }),
                 resetTheme: () => set(d => { d.theme = { ...DEFAULT_THEME }; }),

@@ -65,7 +65,7 @@ function App() {
     let currentSessionId = useSessionStore.getState().sessionId;
     if (!currentSessionId) {
       try {
-        const defaultModel = useConfigStore.getState().defaultModel ?? 'qwen3.6-plus';
+        const defaultModel = useConfigStore.getState().defaultModel ?? 'qwen3.6-max-preview';
         await createSession('.', defaultModel);
         currentSessionId = useSessionStore.getState().sessionId;
       } catch (error) {
