@@ -158,7 +158,7 @@ If no multi-Provider keys are configured, the system automatically falls back to
 | Provider | Base URL | Recommended Model | Notes |
 |----------|----------|-------------------|-------|
 | **Qwen / DashScope** | `https://dashscope.aliyuncs.com/compatible-mode/v1` | qwen3.6-max-preview | **Default**, direct connection in China |
-| **DeepSeek** | `https://api.deepseek.com/v1` | deepseek-chat | Direct connection in China |
+| **DeepSeek** | `https://api.deepseek.com/v1` | deepseek-v4-pro | Direct connection in China |
 | **Moonshot (Kimi)** | `https://api.moonshot.cn/v1` | moonshot-v1-auto | Direct connection in China |
 | **OpenAI** | `https://api.openai.com/v1` | gpt-4o | Requires international network access |
 | **Local Ollama** | `http://localhost:11434/v1` | qwen2.5:latest | Fully offline |

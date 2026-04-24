@@ -157,7 +157,7 @@ LLM_PROVIDER_DEEPSEEK_API_KEY=your-deepseek-key
 | 服务商 | Base URL | 推荐模型 | 备注 |
 |--------|----------|----------|------|
 | **千问/DashScope** | `https://dashscope.aliyuncs.com/compatible-mode/v1` | qwen3.6-max-preview | **默认**，国内直连 |
-| **DeepSeek** | `https://api.deepseek.com/v1` | deepseek-chat | 国内直连 |
+| **DeepSeek** | `https://api.deepseek.com/v1` | deepseek-v4-pro | 国内直连 |
 | **Moonshot（Kimi）** | `https://api.moonshot.cn/v1` | moonshot-v1-auto | 国内直连 |
 | **OpenAI** | `https://api.openai.com/v1` | gpt-4o | 需要外网访问 |
 | **本地 Ollama** | `http://localhost:11434/v1` | qwen2.5:latest | 完全离线 |
