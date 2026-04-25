@@ -291,7 +291,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
                     placeholder={
                         isLoading
                             ? 'AI is thinking... (Ctrl+C to interrupt)'
-                            : 'Type a message... (/ for commands, Ctrl+K for palette)'
+                            : `Type a message... (/ for commands, ${navigator.platform.includes('Mac') ? '⌘' : 'Ctrl+'}K for palette)`
                     }
                     disabled={disabled}
                     aria-label="输入消息"

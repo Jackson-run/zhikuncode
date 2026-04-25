@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.LinkedHashMap;
 
 /**
  * /help [command_name] — 显示所有可用命令列表或指定命令的详细帮助。
@@ -45,33 +46,35 @@ public class HelpCommand implements Command {
         Map<CommandType, List<Command>> grouped = visible.stream()
                 .collect(Collectors.groupingBy(Command::getType));
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("Available Commands:\n\n");
+        // 构建结构化分组数据
+        List<Map<String, Object>> groups = new ArrayList<>();
+        addGroupData(groups, "Local Commands", "本地命令",
+                grouped.getOrDefault(CommandType.LOCAL, List.of()));
+        addGroupData(groups, "Interactive Commands", "交互命令",
+                grouped.getOrDefault(CommandType.LOCAL_JSX, List.of()));
+        addGroupData(groups, "Prompt Commands", "提示词命令",
+                grouped.getOrDefault(CommandType.PROMPT, List.of()));
 
-        // LOCAL 命令
-        appendGroup(sb, "Local Commands", grouped.getOrDefault(CommandType.LOCAL, List.of()));
-        // LOCAL_JSX 命令
-        appendGroup(sb, "Interactive Commands", grouped.getOrDefault(CommandType.LOCAL_JSX, List.of()));
-        // PROMPT 命令
-        appendGroup(sb, "Prompt Commands", grouped.getOrDefault(CommandType.PROMPT, List.of()));
-
-        sb.append("\nType /help <command> for detailed help on a specific command.");
-        return CommandResult.text(sb.toString());
+        return CommandResult.jsx(Map.of(
+                "action", "helpCommandList",
+                "groups", groups,
+                "total", visible.size()
+        ));
     }
 
-    private void appendGroup(StringBuilder sb, String title, List<Command> commands) {
+    private void addGroupData(List<Map<String, Object>> groups, String title, String titleZh,
+                              List<Command> commands) {
         if (commands.isEmpty()) return;
-        sb.append("  ").append(title).append(":\n");
+        List<Map<String, Object>> items = new ArrayList<>();
         for (Command cmd : commands) {
-            sb.append("    /").append(String.format("%-20s", cmd.getName()))
-                    .append(cmd.getDescription()).append("\n");
-            if (!cmd.getAliases().isEmpty()) {
-                sb.append("      aliases: ").append(
-                        cmd.getAliases().stream().map(a -> "/" + a)
-                                .collect(Collectors.joining(", "))).append("\n");
-            }
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("name", cmd.getName());
+            item.put("description", cmd.getDescription());
+            item.put("aliases", cmd.getAliases().stream().map(a -> "/" + a)
+                    .collect(Collectors.toList()));
+            items.add(item);
         }
-        sb.append("\n");
+        groups.add(Map.of("title", title, "titleZh", titleZh, "commands", items));
     }
 
     private CommandResult showCommandDetail(String commandName) {

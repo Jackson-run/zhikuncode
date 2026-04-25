@@ -10,8 +10,11 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.List;
 
 /**
@@ -82,6 +85,13 @@ public class SecurityConfig {
             "http://127.0.0.1:5173",
             "http://127.0.0.1:8080"
         ));
+        // ALLOW_PRIVATE_NETWORK=true 时，自动添加本机局域网 IP（支持手机/平板访问）
+        if (Boolean.parseBoolean(System.getenv().getOrDefault("ALLOW_PRIVATE_NETWORK", "false"))) {
+            for (String localIp : getLocalIps()) {
+                allowedOrigins.add("http://" + localIp + ":5173");
+                allowedOrigins.add("http://" + localIp + ":8080");
+            }
+        }
         // 从环境变量读取额外允许来源
         String extraOrigins = System.getenv("CORS_ALLOWED_ORIGINS");
         if (extraOrigins != null && !extraOrigins.isBlank()) {
@@ -100,5 +110,27 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
+    }
+
+    /**
+     * 获取本机所有局域网 IP 地址。
+     */
+    private List<String> getLocalIps() {
+        List<String> ips = new ArrayList<>();
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface ni = interfaces.nextElement();
+                if (ni.isLoopback() || !ni.isUp()) continue;
+                Enumeration<InetAddress> addresses = ni.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress addr = addresses.nextElement();
+                    if (addr.isSiteLocalAddress() && !addr.getHostAddress().contains(":")) {
+                        ips.add(addr.getHostAddress());
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+        return ips;
     }
 }

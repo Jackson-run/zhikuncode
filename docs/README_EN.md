@@ -63,6 +63,10 @@
 ### Full Browser-Based Control on iPad
 ![iPad Browser Control Demo](assets/demo-ipad-browser.gif)
 
+### 📱 Mobile Full-Stack TODO App Development (End-to-End)
+
+https://github.com/user-attachments/assets/bf1f1d3a-4a9b-4d91-af48-97a7d3dd7b8a
+
 ---
 
 ## ⚡ Quick Start

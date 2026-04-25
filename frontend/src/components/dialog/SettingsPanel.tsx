@@ -20,6 +20,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
     const { theme, setTheme, locale, setLocale } = useConfigStore();
     const { model, setModel, effortValue, setEffort } = useSessionStore();
     const { permissionMode, setPermissionMode } = usePermissionStore();
+    const isMac = navigator.platform.includes('Mac');
 
     const handleThemeChange = useCallback((mode: ThemeConfig['mode']) => {
         setTheme({ mode });
@@ -192,6 +193,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
                             <ShortcutItem keys={['Enter']} description="发送消息" />
                             <ShortcutItem keys={['Shift', 'Enter']} description="换行" />
                             <ShortcutItem keys={['/']} description="打开命令面板" />
+                            <ShortcutItem keys={[isMac ? '⌘' : 'Ctrl', 'K']} description="全局命令面板" />
                             <ShortcutItem keys={['Esc']} description="取消/关闭" />
                             <ShortcutItem keys={['Ctrl', 'C']} description="中断生成" />
                         </div>

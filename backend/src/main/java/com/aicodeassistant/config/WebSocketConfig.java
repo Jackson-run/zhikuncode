@@ -18,7 +18,12 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,10 +66,18 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // v1.44.0: 固定端点 /ws，sessionId 通过 CONNECT 帧 header 传递
+        List<String> origins = new ArrayList<>(List.of(
+            "http://localhost:5173", "http://localhost:8080",
+            "http://127.0.0.1:5173", "http://127.0.0.1:8080"));
+        // ALLOW_PRIVATE_NETWORK=true 时，自动添加本机局域网 IP（支持手机/平板访问）
+        if (Boolean.parseBoolean(System.getenv().getOrDefault("ALLOW_PRIVATE_NETWORK", "false"))) {
+            for (String localIp : getLocalIps()) {
+                origins.add("http://" + localIp + ":5173");
+                origins.add("http://" + localIp + ":8080");
+            }
+        }
         registry.addEndpoint("/ws")
-                .setAllowedOrigins(
-                    "http://localhost:5173", "http://localhost:8080",
-                    "http://127.0.0.1:5173", "http://127.0.0.1:8080")
+                .setAllowedOrigins(origins.toArray(String[]::new))
                 .withSockJS();
     }
 
@@ -210,5 +223,27 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         public String getName() {
             return name;
         }
+    }
+
+    /**
+     * 获取本机所有局域网 IP 地址。
+     */
+    private static List<String> getLocalIps() {
+        List<String> ips = new ArrayList<>();
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface ni = interfaces.nextElement();
+                if (ni.isLoopback() || !ni.isUp()) continue;
+                Enumeration<InetAddress> addresses = ni.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress addr = addresses.nextElement();
+                    if (addr.isSiteLocalAddress() && !addr.getHostAddress().contains(":")) {
+                        ips.add(addr.getHostAddress());
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+        return ips;
     }
 }

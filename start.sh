@@ -122,14 +122,41 @@ kill_port $FRONTEND_PORT
 # ======================== 启动 Backend ========================
 log_step "启动 Backend (Java Spring Boot :$BACKEND_PORT)..."
 cd "$PROJECT_ROOT/backend"
-# 先 clean compile 确保所有类（含 inner record）完整编译，避免残留 class 导致 NoClassDefFoundError
-log_info "正在编译 Backend (clean compile)..."
-./mvnw clean compile -DskipTests -q > "$BACKEND_LOG" 2>&1
+# 清理残留 Backend Java 进程
+JAVA_PIDS=$(pgrep -f 'ai-code-assistant-backend' 2>/dev/null || true)
+if [ -n "$JAVA_PIDS" ]; then
+    log_warn "检测到残留 Backend Java 进程 ($JAVA_PIDS)，终止..."
+    echo "$JAVA_PIDS" | xargs kill -9 2>/dev/null || true
+    sleep 1
+fi
+# 清理 target 目录
+if [ -d "$PROJECT_ROOT/backend/target" ]; then
+    rm -rf "$PROJECT_ROOT/backend/target"
+    if [ -d "$PROJECT_ROOT/backend/target" ]; then
+        sleep 2
+        rm -rf "$PROJECT_ROOT/backend/target"
+    fi
+    if [ -d "$PROJECT_ROOT/backend/target" ]; then
+        log_error "无法清理 target 目录，请手动执行: rm -rf backend/target"
+        exit 1
+    fi
+fi
+# clean package: 编译 + 打包 fat jar（包含所有依赖）
+log_info "正在编译打包 Backend (clean package)..."
+./mvnw clean package -DskipTests -q > "$BACKEND_LOG" 2>&1
 if [ $? -ne 0 ]; then
-    log_error "Backend 编译失败，请查看日志: $BACKEND_LOG"
+    log_error "Backend 编译打包失败，请查看日志: $BACKEND_LOG"
     exit 1
 fi
-nohup ./mvnw spring-boot:run -DskipTests >> "$BACKEND_LOG" 2>&1 < /dev/null &
+# 查找生成的 fat jar
+BACKEND_JAR=$(find "$PROJECT_ROOT/backend/target" -maxdepth 1 -name '*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' | head -1)
+if [ -z "$BACKEND_JAR" ] || [ ! -f "$BACKEND_JAR" ]; then
+    log_error "未找到打包产物 jar 文件，请检查编译日志: $BACKEND_LOG"
+    exit 1
+fi
+log_info "打包完成: $(basename "$BACKEND_JAR")"
+# 直接用 java -jar 启动（PID = JVM PID，无 fork 问题）
+nohup java -jar "$BACKEND_JAR" >> "$BACKEND_LOG" 2>&1 < /dev/null &
 BACKEND_PID=$!
 log_info "Backend 进程已启动 (PID: $BACKEND_PID)"
 

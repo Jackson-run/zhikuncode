@@ -199,14 +199,15 @@ function MemoryManager() {
 
 /** 快捷键编辑 */
 function KeybindingsEditor() {
+  const isMac = navigator.platform.includes('Mac');
   const defaultBindings = [
     { key: 'Enter', action: 'chat:submit', context: 'Chat' },
     { key: 'Escape', action: 'chat:cancel', context: 'Chat' },
     { key: 'Ctrl+C', action: 'app:interrupt', context: 'Global' },
-    { key: 'Ctrl+K', action: 'chat:modelPicker', context: 'Chat' },
-    { key: 'Ctrl+Shift+P', action: 'app:quickOpen', context: 'Global' },
+    { key: isMac ? '⌘+K' : 'Ctrl+K', action: 'chat:modelPicker', context: 'Chat' },
+    { key: isMac ? '⌘+Shift+P' : 'Ctrl+Shift+P', action: 'app:quickOpen', context: 'Global' },
     { key: 'Shift+Tab', action: 'chat:cycleMode', context: 'Chat' },
-    { key: 'Ctrl+Shift+T', action: 'app:toggleTodos', context: 'Global' },
+    { key: isMac ? '⌘+Shift+T' : 'Ctrl+Shift+T', action: 'app:toggleTodos', context: 'Global' },
     { key: 'Tab', action: 'autocomplete:accept', context: 'Autocomplete' },
     { key: 'PageUp', action: 'scroll:pageUp', context: 'Scroll' },
     { key: 'PageDown', action: 'scroll:pageDown', context: 'Scroll' },

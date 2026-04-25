@@ -15,6 +15,7 @@ import type { Message } from '@/types';
 import { GitDiffPanel } from '@/components/git/GitDiffPanel';
 import { GitCommitPanel } from '@/components/git/GitCommitPanel';
 import { DiagnosticPanel } from '@/components/doctor/DiagnosticPanel';
+import { HelpPanel } from '@/components/help/HelpPanel';
 import { sendSlashCommand } from '@/api/stompClient';
 
 interface SystemMessageProps {
@@ -55,6 +56,17 @@ const SystemMessage: React.FC<SystemMessageProps> = ({ message }) => {
                             fileCount: metadata.fileCount as number,
                         }}
                         onCommit={(msg) => sendSlashCommand('commit', `"${msg}"`)}
+                    />
+                </div>
+            );
+        }
+
+        if (action === 'helpCommandList') {
+            return (
+                <div className="system-message px-4 py-2 my-1">
+                    <HelpPanel
+                        groups={metadata.groups as Array<{ title: string; titleZh: string; commands: Array<{ name: string; description: string; aliases: string[] }> }>}
+                        total={metadata.total as number}
                     />
                 </div>
             );

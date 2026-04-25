@@ -263,31 +263,19 @@ public class SubAgentExecutor {
     /**
      * 解析 Worker 代理的权限模式。
      * <p>
-     * 规则:
-     * <ul>
-     *   <li>explore / verification 类型 → BUBBLE 模式（权限请求上报到父代理）</li>
-     *   <li>其他类型 → 继承父代理的权限模式</li>
-     * </ul>
+     * 所有子代理均使用 BUBBLE 模式，因为子代理没有自己的 WebSocket 连接，
+     * 权限请求必须通过父会话的 WebSocket 连接转发给前端。
      *
      * @param agentType     代理类型
      * @param parentContext 父代理上下文
-     * @return 子代理应使用的权限模式
+     * @return 子代理应使用的权限模式（始终为 BUBBLE）
      */
     private PermissionMode resolveWorkerPermissionMode(
             String agentType, ToolUseContext parentContext) {
-        // 只读型 Worker 使用 BUBBLE 模式，权限请求上报到父代理
-        if ("explore".equalsIgnoreCase(agentType)
-                || "verification".equalsIgnoreCase(agentType)) {
-            log.debug("resolveWorkerPermissionMode: agentType='{}' → BUBBLE", agentType);
-            return PermissionMode.BUBBLE;
-        }
-        // 其他类型: 继承父代理的权限模式
-        PermissionMode parentMode = permissionModeManager.getMode(
-                parentContext.sessionId());
-        PermissionMode resolved = parentMode != null ? parentMode : PermissionMode.DEFAULT;
-        log.debug("resolveWorkerPermissionMode: agentType='{}', parentMode={} → {}",
-                agentType, parentMode, resolved);
-        return resolved;
+        // 所有子代理均使用 BUBBLE 模式 — 子代理无自己的 WebSocket principal，
+        // 权限请求必须冒泡到父会话才能推送到前端。
+        log.debug("resolveWorkerPermissionMode: agentType='{}' → BUBBLE (all subagents)", agentType);
+        return PermissionMode.BUBBLE;
     }
 
     // ═══ 代理层级构建 ═══

@@ -1,5 +1,6 @@
 package com.aicodeassistant.tool.interaction;
 
+import com.aicodeassistant.engine.ElicitationService;
 import com.aicodeassistant.tool.ToolInput;
 import com.aicodeassistant.tool.ToolResult;
 import com.aicodeassistant.tool.ToolUseContext;
@@ -28,13 +29,13 @@ class InteractionToolGoldenTest {
     @DisplayName("1. AskUserQuestionTool")
     class AskUserQuestionTests {
 
-        private SimpMessagingTemplate messagingTemplate;
+        private ElicitationService elicitationService;
         private AskUserQuestionTool tool;
 
         @BeforeEach
         void setUp() {
-            messagingTemplate = mock(SimpMessagingTemplate.class);
-            tool = new AskUserQuestionTool(messagingTemplate);
+            elicitationService = mock(ElicitationService.class);
+            tool = new AskUserQuestionTool(elicitationService);
         }
 
         @Test
@@ -95,37 +96,19 @@ class InteractionToolGoldenTest {
         }
 
         @Test
-        @DisplayName("1.7 receiveAnswer 完成 Future — 返回成功")
-        void receiveAnswer() throws Exception {
+        @DisplayName("1.7 ElicitationService 返回成功 — 工具返回成功")
+        void elicitationSuccess() throws Exception {
+            // Mock ElicitationService 返回成功响应
+            when(elicitationService.requestAndWait(anyString(), anyString(), anyList(), anyLong()))
+                    .thenReturn(ElicitationService.ElicitationResponse.success("opt-A"));
+
             List<Map<String, Object>> questions = List.of(makeQuestion(2));
             ToolInput input = ToolInput.from(Map.of("questions", questions));
+            ToolResult result = tool.call(input, ToolUseContext.of("/tmp", "s1"));
 
-            // 异步调用 tool.call（它会阻塞等待 answer）
-            CompletableFuture<ToolResult> resultFuture = CompletableFuture.supplyAsync(
-                    () -> tool.call(input, ToolUseContext.of("/tmp", "s1")));
-
-            // 等待问题被推送
-            Thread.sleep(200);
-            assertEquals(1, tool.getPendingCount());
-
-            // 获取 requestId 并回调
-            // 由于 requestId 是 UUID，通过 verify 获取
-            verify(messagingTemplate).convertAndSend(
-                    eq("/topic/session/s1"),
-                    (Object) argThat(arg -> {
-                        if (arg instanceof Map<?, ?> map) {
-                            String reqId = (String) map.get("requestId");
-                            if (reqId != null) {
-                                tool.receiveAnswer(reqId, Map.of("q0", "opt-A"));
-                                return true;
-                            }
-                        }
-                        return false;
-                    }));
-
-            ToolResult result = resultFuture.get();
             assertFalse(result.isError());
             assertTrue(result.content().contains("answers"));
+            verify(elicitationService).requestAndWait(eq("s1"), anyString(), anyList(), anyLong());
         }
 
         private Map<String, Object> makeQuestion(int numOptions) {

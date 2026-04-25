@@ -1,38 +1,35 @@
 package com.aicodeassistant.tool.interaction;
 
+import com.aicodeassistant.engine.ElicitationService;
+import com.aicodeassistant.engine.ElicitationService.ElicitationOption;
+import com.aicodeassistant.engine.ElicitationService.ElicitationResponse;
 import com.aicodeassistant.tool.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.*;
 
 /**
  * AskUserQuestionTool — 向用户提出多选问题。
  * <p>
- * 通过 WebSocket 推送问题到前端，阻塞等待用户选择（带 5 分钟超时）。
- * 前端用户选择后通过 {@link #receiveAnswer(String, Map)} 回调完成 Future。
+ * 通过 {@link ElicitationService} 逐个推送问题到前端，复用已有的 ElicitationDialog UI。
+ * 每个问题阻塞等待用户选择（带 5 分钟超时）。
  * <p>
  * 输入验证: 1-4 个问题，每个 2-4 个选项。
- *
  */
 @Component
 public class AskUserQuestionTool implements Tool {
 
     private static final Logger log = LoggerFactory.getLogger(AskUserQuestionTool.class);
-    private static final Duration QUESTION_TIMEOUT = Duration.ofMinutes(5);
+    private static final long QUESTION_TIMEOUT_MS = 5 * 60 * 1000L; // 5 分钟
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private final SimpMessagingTemplate messagingTemplate;
-    private final ConcurrentMap<String, CompletableFuture<Map<String, String>>> pendingQuestions
-            = new ConcurrentHashMap<>();
+    private final ElicitationService elicitationService;
 
-    public AskUserQuestionTool(SimpMessagingTemplate messagingTemplate) {
-        this.messagingTemplate = messagingTemplate;
+    public AskUserQuestionTool(ElicitationService elicitationService) {
+        this.elicitationService = elicitationService;
     }
 
     @Override
@@ -141,56 +138,48 @@ public class AskUserQuestionTool implements Tool {
             }
         }
 
-        // 2. 生成唯一请求 ID
-        String requestId = UUID.randomUUID().toString();
-        CompletableFuture<Map<String, String>> future = new CompletableFuture<>();
-        pendingQuestions.put(requestId, future);
+        // 2. 通过 ElicitationService 逐个提问，复用前端已有的 ElicitationDialog
+        Map<String, Object> allAnswers = new LinkedHashMap<>();
+        for (int i = 0; i < questions.size(); i++) {
+            Map<String, Object> q = questions.get(i);
+            String questionText = (String) q.get("question");
+            List<Map<String, String>> rawOptions = (List<Map<String, String>>) q.get("options");
 
-        // 3. 通过 WebSocket 推送问题到前端
-        messagingTemplate.convertAndSend(
-                "/topic/session/" + context.sessionId(),
-                Map.of("type", "ask_user_question",
-                        "requestId", requestId,
-                        "questions", questions));
+            // 转换为 ElicitationOption 格式
+            List<ElicitationOption> elicitOptions = new ArrayList<>();
+            for (Map<String, String> opt : rawOptions) {
+                String label = opt.getOrDefault("label", "");
+                String desc = opt.getOrDefault("description", "");
+                elicitOptions.add(new ElicitationOption(label, label, desc));
+            }
 
-        log.info("AskUserQuestion: sent {} questions, requestId={}", questions.size(), requestId);
+            log.info("AskUserQuestion: sending question {}/{}: '{}'", i + 1, questions.size(), questionText);
 
-        // 4. 阻塞等待用户选择（带超时）
+            ElicitationResponse response = elicitationService.requestAndWait(
+                    context.sessionId(), questionText, elicitOptions, QUESTION_TIMEOUT_MS);
+
+            switch (response.status()) {
+                case SUCCESS -> allAnswers.put("q" + (i + 1), response.value());
+                case CANCELLED -> {
+                    return ToolResult.error("User cancelled the question.");
+                }
+                case TIMEOUT -> {
+                    return ToolResult.error("User did not respond within 5 minutes.");
+                }
+                case ERROR -> {
+                    return ToolResult.error("Error: " + response.error());
+                }
+            }
+        }
+
+        // 3. 构建结果
         try {
-            Map<String, String> answers = future.get(
-                    QUESTION_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
-
-            // 5. 构建结果
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("questions", questions);
-            result.put("answers", answers);
+            result.put("answers", allAnswers);
             return ToolResult.success(MAPPER.writeValueAsString(result));
-
-        } catch (TimeoutException e) {
-            pendingQuestions.remove(requestId);
-            return ToolResult.error(
-                    "User did not respond within " + QUESTION_TIMEOUT.toMinutes() + " minutes.");
         } catch (Exception e) {
-            pendingQuestions.remove(requestId);
-            return ToolResult.error("Error waiting for user response: " + e.getMessage());
+            return ToolResult.error("Error serializing result: " + e.getMessage());
         }
-    }
-
-    /**
-     * WebSocket 回调入口 — 前端用户选择后调用。
-     * 通过 @MessageMapping("/answer/{requestId}") 映射。
-     */
-    public void receiveAnswer(String requestId, Map<String, String> answers) {
-        CompletableFuture<Map<String, String>> future = pendingQuestions.remove(requestId);
-        if (future != null) {
-            future.complete(answers);
-        } else {
-            log.warn("Received answer for unknown requestId: {}", requestId);
-        }
-    }
-
-    /** 获取待处理问题数（测试用） */
-    int getPendingCount() {
-        return pendingQuestions.size();
     }
 }

@@ -30,7 +30,7 @@ echo "       ZhikuCode 三端停止"
 echo "============================================"
 echo ""
 
-# 通过 PID 文件停止
+# 通过 PID 文件停止（java -jar 启动方式，PID 就是 JVM 本身，无 fork 问题）
 if [ -f "$PID_FILE" ]; then
     source "$PID_FILE"
     [ -n "$BACKEND_PID" ]  && kill "$BACKEND_PID"  2>/dev/null && log_info "Backend 已停止 (PID: $BACKEND_PID)"
@@ -39,16 +39,23 @@ if [ -f "$PID_FILE" ]; then
     rm -f "$PID_FILE"
 fi
 
-# 兜底：通过端口清理
+# 兖底：通过端口清理
 sleep 1
 kill_port 8080
 kill_port 8000
 kill_port 5173
 
-# 清理 Backend 编译产物，防止残留 class 导致 NoClassDefFoundError
+# 等待进程完全退出并释放文件句柄
+sleep 2
+
+# 清理 Backend 编译产物（可选，java -jar 模式下已不会锁定 target）
 if [ -d "$PROJECT_ROOT/backend/target" ]; then
-    rm -rf "$PROJECT_ROOT/backend/target"
-    log_info "Backend target 目录已清理"
+    rm -rf "$PROJECT_ROOT/backend/target" 2>/dev/null
+    if [ -d "$PROJECT_ROOT/backend/target" ]; then
+        log_warn "Backend target 目录清理不完整，将在下次启动时清理"
+    else
+        log_info "Backend target 目录已清理"
+    fi
 fi
 
 echo ""
